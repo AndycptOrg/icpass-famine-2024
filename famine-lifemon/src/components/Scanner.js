@@ -9,6 +9,7 @@ import { secret } from './secret/Secret';
 
 export default function Scanner({ setChecked, snapshot, id }) {
 	const [poorOpen, setPoorOpen] = useState(false);
+	const [uneducatedOpen, setUneducatedOpen] = useState(false);
 	const [failOpen, setFailOpen] = useState(false);
 	const [bankOpen, setBankOpen] = useState(false);
 
@@ -44,7 +45,7 @@ export default function Scanner({ setChecked, snapshot, id }) {
 				return;
 			}
 			if (!!data.education && snapshot.education !== data.education.original) {
-				setFailOpen(true);
+				setUneducatedOpen(true);
 				return;
 			}
 			if (!!data.foodBank) {
@@ -109,6 +110,24 @@ export default function Scanner({ setChecked, snapshot, id }) {
 					}
 				>
 					Invalid QR code
+				</Alert>
+			</Snackbar>
+			<Snackbar
+				open={uneducatedOpen}
+				autoHideDuration={2000}
+				onClose={
+					(e) => setFailOpen(false)
+				}
+				TransitionComponent={Slide}
+			>
+				<Alert 
+					severity="error" 
+					sx={{width: '100%'}}
+					onClose={
+						(e) => setUneducatedOpen(false)
+					}
+				>
+					You are not educated enough to do this
 				</Alert>
 			</Snackbar>
 			<Snackbar
