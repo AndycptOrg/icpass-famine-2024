@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import '@fontsource/roboto/400.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
+import { helperPath } from './secret/Secret';
 import Passport from './Passport';
 import Layout from './Layout';
 import NewUser from './NewUser';
@@ -60,7 +61,7 @@ export default function App() {
               </> :
               <>
                 <Route index element={<NewUser setId={setId} />} />
-                <Route path="cst0313" element={<Admin />} />
+                <Route path={helperPath} element={<Admin />} />
                 <Route path='result' element={<Result />} />
                 <Route path='*' element={<NewUser setId={setId} />} />
               </>
