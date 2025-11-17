@@ -45,7 +45,7 @@ const Hospital = ({ setFormData }) => {
           setFormData({
             food: -1,
             happiness: -1,
-            money: type ? amount * 30 : amount * 50,
+            money: type ? amount * 30 : amount * 100,
             charity: 0,
             married: false,
           });

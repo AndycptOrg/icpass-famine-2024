@@ -7,6 +7,15 @@ const FoodBank = ({ setFormData }) => {
   const [amount, setAmount] = useState(1);
   const [price, setPrice] = useState(-100);
 
+  const roles = [
+    'Customer',
+    'Donor',
+    'Recipient'
+  ]
+  const CustomerID = roles.indexOf('Customer');
+  const DonorID = roles.indexOf('Donor');
+  const RecipientID = roles.indexOf('Recipient');
+
   return (
     <>
       <TextField
@@ -14,16 +23,32 @@ const FoodBank = ({ setFormData }) => {
         id="type-select"
         size='large'
         value={type}
-        label="Type"
+        // deciding role
+        label="Role"
         onChange={e => {
-          const value = e.target.value;
-          setType(value);
+          const role = e.target.value;
+          setType(role);
           setFormData({
-            food: value === 0 ? amount : value === 1 ? -amount : 1,
-            foodBank: value === 0 ? 0 : value === 1 ? amount : -1,
-            happiness: value === 0 ? amount : value === 1 ? amount * 5 : 3,
-            money: value === 0 ? amount * price : 0,
-            charity: value === 0 ? 0 : value === 1 ? amount * 5 : 2,
+            food: role === CustomerID ? amount :
+                  role === DonorID ? -amount :
+                  role === RecipientID ? 1 :
+                  undefined,
+            foodBank: role === CustomerID ? 0 :
+                      role === DonorID ? amount :
+                      role === RecipientID ? -1 :
+                      undefined,
+            happiness:  role === CustomerID ? amount :
+                        role === DonorID ? amount * 5 :
+                        role === RecipientID ? 3 :
+                        undefined,
+            money:  role === CustomerID ? amount * price :
+                    role === DonorID ||
+                    role === RecipientID ? 0 :
+                    undefined,
+            charity:  role === CustomerID ? 0 :
+                      role === DonorID ? amount * 5 :
+                      role === RecipientID ? 2 :
+                      undefined,
             married: false,
           });
         }}
@@ -32,18 +57,20 @@ const FoodBank = ({ setFormData }) => {
         fullWidth
         margin='dense'
       >
-        <MenuItem key={0} value={0}>Customer</MenuItem>
-        <MenuItem key={1} value={1}>Donor</MenuItem>
-        <MenuItem key={2} value={2}>Recipient</MenuItem>
+        {
+          roles.map((role, i) =>
+            <MenuItem key={i} value={i}>{role}</MenuItem>
+          )
+        }
       </TextField>
       {
-        (type !== 2) &&
+        (type == CustomerID || type === DonorID) &&
           <TextField
             required
             id="amount-select"
             size='large'
             value={amount}
-            label="Amount"
+            label="Amount of Food"
             onChange={e => {
               const value = e.target.value;
               setAmount(value);
@@ -69,7 +96,7 @@ const FoodBank = ({ setFormData }) => {
           </TextField>
       }
       {
-        (type === 0) &&
+        (type === CustomerID) &&
           <TextField
             required
             id="price-select"
@@ -80,10 +107,10 @@ const FoodBank = ({ setFormData }) => {
               const value = e.target.value;
               setPrice(value);
               setFormData({
-                food: type === 0 ? amount : -amount,
+                food: amount,
                 foodBank: 0,
-                happiness: type === 0 ? amount : amount * 5,
-                money: type === 0 ? amount * value : 0,
+                happiness: amount,
+                money: amount * value,
                 charity: 0,
                 married: false,
               });

@@ -7,6 +7,18 @@ const YellowGambleDrug = ({ setFormData }) => {
   const [amount, setAmount] = useState(0);
   const [result, setResult] = useState(true);
 
+  const options = [
+    'Casino',
+    'Drug House',
+    'Club',
+    'Scammer'
+  ];
+
+  const CasinoID = options.indexOf('Casino');
+  const DrugHouseID = options.indexOf('Drug House');
+  const ClubID = options.indexOf('Club');
+  const ScammerID = options.indexOf('Scammer');
+
   return (
     <>
       <TextField
@@ -33,12 +45,14 @@ const YellowGambleDrug = ({ setFormData }) => {
         fullWidth
         margin='dense'
       >
-        <MenuItem key={0} value={0}>Casino</MenuItem>
-        <MenuItem key={1} value={1}>Drug House</MenuItem>
-        <MenuItem key={1} value={2}>Club</MenuItem>
+        {
+          options.map((option, index) => (
+            <MenuItem key={index} value={index}>{option}</MenuItem>
+          ))
+        }
       </TextField>
       {
-        (type === 0) ?
+        (type === CasinoID) ?
           <TextField
             required
             id="amount-select"
@@ -65,6 +79,8 @@ const YellowGambleDrug = ({ setFormData }) => {
             type='number'
             inputProps={{ min: -500, max: 500 }}
           /> :
+          // club or drug house
+          (type !== ScammerID) ?
           <TextField
           required
           id="result-select"
@@ -77,7 +93,7 @@ const YellowGambleDrug = ({ setFormData }) => {
             setFormData({
               food: type === 1 ? -1 : -3,
               happiness: type === 1 ? -1 : value ? 5 : 0,
-              money: type === 1 ? value ? 500 : -300 : 0,
+              money: type === DrugHouseID ? value ? 500 : -300 : -50,
               charity: 0,
               married: false,
             });
@@ -89,6 +105,35 @@ const YellowGambleDrug = ({ setFormData }) => {
         >
           <MenuItem key={0} value={true}>{ type === 1 ? 'Successful' : 'Win' }</MenuItem>
           <MenuItem key={1} value={false}>{ type === 1 ? 'Fail' : 'Lose' }</MenuItem>
+        </TextField>
+        // scammer
+        : <TextField
+            required
+            id="amount-select"
+            size='large'
+            value={amount}
+            label="Difficulty"
+            onChange={e => {
+              const value = e.target.value;
+              setAmount(value);
+              setFormData({
+                food: -1,
+                happiness: -1,
+                money: 100 + (value * 200),
+                charity: 0,
+                married: false,
+              });
+            }}
+            sx={{width: '20em'}}
+            select
+            fullWidth
+            margin='dense'
+          >
+          {
+            (['Easy', 'Medium', 'Hard']).map((difficulty, i) => 
+              <MenuItem key={i} value={i}>{difficulty}</MenuItem>
+            )
+          }
         </TextField>
       }
     </>

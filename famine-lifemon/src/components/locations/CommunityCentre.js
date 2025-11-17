@@ -5,6 +5,14 @@ import { TextField, MenuItem } from '@mui/material';
 const CommunityCentre = ({ setFormData }) => {
   const [type, setType] = useState(true);
 
+  const roles = [
+    'Recycling Operative',
+    'Collecting food waste'
+  ];
+
+  const RecyclingOperativeID = roles.indexOf('Recycling Operative');
+  const CollectingFoodWasteID = roles.indexOf('Collecting food waste');
+
   return (
     <TextField
       required
@@ -16,10 +24,10 @@ const CommunityCentre = ({ setFormData }) => {
         const value = e.target.value;
         setType(value);
         setFormData({
-          food: -1,
+          food: 2,
           happiness: 2,
-          money: value === 0 ? 100 : 0,
-          charity: value === 0 ? 5: 0,
+          money: 0,
+          charity: 5,
           married: false,
         });
       }}
@@ -28,8 +36,11 @@ const CommunityCentre = ({ setFormData }) => {
       fullWidth
       margin='dense'
     >
-      <MenuItem key={0} value={0}>Recycling Operative</MenuItem>
-      <MenuItem key={1} value={1}>Curling</MenuItem>
+      {
+        roles.map((role, index) => (
+          <MenuItem key={index} value={index}>{role}</MenuItem>
+        ))
+      }
     </TextField>
   )
 }

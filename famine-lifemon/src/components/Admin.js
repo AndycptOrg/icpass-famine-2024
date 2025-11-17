@@ -11,6 +11,7 @@ import Farm from './locations/Farm';
 import FoodBank from './locations/FoodBank';
 import Hospital from './locations/Hospital';
 import ICEntertainment from './locations/ICEntertainment';
+import JobCentre from './locations/JobCentre';
 import Lab from './locations/Lab';
 // import Library from './locations/Library';
 import PoliceStationPrison from './locations/PoliceStationPrison';
@@ -20,7 +21,7 @@ import YellowGambleDrug from './locations/YellowGambleDrug';
 
 const Admin = () => {
   const locations = [
-    'Boba Shop',
+    // 'Boba Shop',
     'Church',
     'Community Centre',
     'Corporation',
@@ -29,6 +30,7 @@ const Admin = () => {
     'Food Bank',
     'Hospital',
     'IC Entertainment',
+    'Job Centre',
     'Lab',
     'Library',
     'Police Station & Prison',
@@ -44,6 +46,7 @@ const Admin = () => {
   const FarmID = locations.indexOf('Farm');
   const FoodBankID = locations.indexOf('Food Bank');
   const HospitalID = locations.indexOf('Hospital');
+  const JobCentreID = locations.indexOf('Job Centre');
   const EntertainmentID = locations.indexOf('IC Entertainment');
   const LabID = locations.indexOf('Lab');
   const LibraryID = locations.indexOf('Library');
@@ -84,12 +87,13 @@ const Admin = () => {
                   value === ChurchID ? 6 :
                   value === CommunityCentreID ? 5 :
                   value === BobaShopID || value === LibraryID ? 2 :
+                  value === EntertainmentID ? 2 :
                   -1,
       money: (
         value === BobaShopID || value === FoodBankID ? -100 :
         value === FactoryID || value === LabID || value === HospitalID ? 30 :
         value === FarmID || value === LibraryID ? 150 :
-        value === EntertainmentID ? 120 :
+        value === EntertainmentID ? -50 :
         value === CorporationID ? 250 :
         // value === 0 ? 100 :
         0
@@ -130,12 +134,19 @@ const Admin = () => {
         (location === FoodBankID) ? <FoodBank setFormData={setFormData} /> :
         (location === HospitalID) ? <Hospital setFormData={setFormData} /> :
         (location === EntertainmentID) ? <ICEntertainment setFormData={setFormData} /> :
+        (location === JobCentreID) ? <JobCentre setFormData={setFormData} /> :
         (location === LabID) ? <Lab setFormData={setFormData} /> :
         (location === PoliceStationPrisonID) ? <PoliceStationPrison setFormData={setFormData} /> :
         (location === SchoolID) ? <School setFormData={setFormData} /> :
         (location === GambaID) ? <YellowGambleDrug setFormData={setFormData} /> :
         <></>
       }
+      <div style={{ marginTop: 12 }}>
+        <strong>Current formData:</strong>
+        <pre style={{ background: '#f6f6f6', padding: 8, borderRadius: 4 }}>
+          {JSON.stringify(formData, null, 2)}
+        </pre>
+      </div>
       <Code
         header="famine-2023-lifemon"
         food={formData.food}
