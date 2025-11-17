@@ -36,6 +36,21 @@ const Admin = () => {
     'Sports Centre',
     'Yellow Gamble Drug',
   ];
+  const BobaShopID = locations.indexOf('Boba Shop');
+  const ChurchID = locations.indexOf('Church');
+  const CommunityCentreID = locations.indexOf('Community Centre');
+  const CorporationID = locations.indexOf('Corporation');
+  const FactoryID = locations.indexOf('Factory');
+  const FarmID = locations.indexOf('Farm');
+  const FoodBankID = locations.indexOf('Food Bank');
+  const HospitalID = locations.indexOf('Hospital');
+  const EntertainmentID = locations.indexOf('IC Entertainment');
+  const LabID = locations.indexOf('Lab');
+  const LibraryID = locations.indexOf('Library');
+  const PoliceStationPrisonID = locations.indexOf('Police Station & Prison');
+  const SchoolID = locations.indexOf('School');
+  const SportsCentreID = locations.indexOf('Sports Centre');
+  const GambaID = locations.indexOf('Yellow Gamble Drug');
 
 	const [formData, setFormData] = useState({
 		food: 0,
@@ -61,19 +76,27 @@ const Admin = () => {
     const value = e.target.value;
     setLocation(value);
     setFormData({
-      food: value === 0 || value === 6 ? 1 : value === 10 ? 0 : value === 1 ? -3 : -1,
-      happiness: value === 6 ? 1 : value === 1 ? 6 : value === 2 ? 5 : value === 0 || value === 10 ? 2 : -1,
+      food: value === BobaShopID || value === FoodBankID ? 1 :
+            value === LibraryID ? 0 :
+            value === ChurchID ? -3 :
+            -1,
+      happiness:  value === FoodBankID ? 1 :
+                  value === ChurchID ? 6 :
+                  value === CommunityCentreID ? 5 :
+                  value === BobaShopID || value === LibraryID ? 2 :
+                  -1,
       money: (
-        value === 0 || value === 6 ? -100 :
-        value === 4 || value === 9 || value === 7 ? 30 :
-        value === 5 || value === 10 ? 150 :
-        value === 8 ? 120 :
-        value === 3 ? 250 :
-        value === 0 ? 100 : 0
+        value === BobaShopID || value === FoodBankID ? -100 :
+        value === FactoryID || value === LabID || value === HospitalID ? 30 :
+        value === FarmID || value === LibraryID ? 150 :
+        value === EntertainmentID ? 120 :
+        value === CorporationID ? 250 :
+        // value === 0 ? 100 :
+        0
       ),
-      education: value === 12 ? { original: 0, pass: 1 } : undefined,
-      charity: value === 2 || value === 10 ? 5 : 0,
-      married: value === 1,
+      education: value === SchoolID ? { original: 0, pass: 1 } : undefined,
+      charity: value === CommunityCentreID || value === LibraryID ? 5 : 0,
+      married: value === ChurchID,
     });
   }
 
@@ -98,21 +121,19 @@ const Admin = () => {
         }
       </TextField>
       {
-        (location === 0) ? <BobaShop setFormData={setFormData} /> :
-        (location === 1) ? <Church setFormData={setFormData} /> :
-        (location === 2) ? <CommunityCentre setFormData={setFormData} /> :
-        (location === 3) ? <Corporation setFormData={setFormData} /> :
-        (location === 4) ? <Factory setFormData={setFormData} /> :
-        (location === 5) ? <Farm setFormData={setFormData} /> :
-        (location === 6) ? <FoodBank setFormData={setFormData} /> :
-        (location === 7) ? <Hospital setFormData={setFormData} /> :
-        (location === 8) ? <ICEntertainment setFormData={setFormData} /> :
-        (location === 9) ? <Lab setFormData={setFormData} /> :
-        // (location === 10) ? <Library setFormData={setFormData} /> : 
-        (location === 11) ? <PoliceStationPrison setFormData={setFormData} /> :
-        (location === 12) ? <School setFormData={setFormData} /> :
-        // (location === 13) ? <SportsCentre setFormData={setFormData} /> :
-        (location === 14) ? <YellowGambleDrug setFormData={setFormData} /> :
+        (location === BobaShopID) ? <BobaShop setFormData={setFormData} /> :
+        (location === ChurchID) ? <Church setFormData={setFormData} /> :
+        (location === CommunityCentreID) ? <CommunityCentre setFormData={setFormData} /> :
+        (location === CorporationID) ? <Corporation setFormData={setFormData} /> :
+        (location === FactoryID) ? <Factory setFormData={setFormData} /> :
+        (location === FarmID) ? <Farm setFormData={setFormData} /> :
+        (location === FoodBankID) ? <FoodBank setFormData={setFormData} /> :
+        (location === HospitalID) ? <Hospital setFormData={setFormData} /> :
+        (location === EntertainmentID) ? <ICEntertainment setFormData={setFormData} /> :
+        (location === LabID) ? <Lab setFormData={setFormData} /> :
+        (location === PoliceStationPrisonID) ? <PoliceStationPrison setFormData={setFormData} /> :
+        (location === SchoolID) ? <School setFormData={setFormData} /> :
+        (location === GambaID) ? <YellowGambleDrug setFormData={setFormData} /> :
         <></>
       }
       <Code
