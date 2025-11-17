@@ -12,10 +12,10 @@ import FoodBank from './locations/FoodBank';
 import Hospital from './locations/Hospital';
 import ICEntertainment from './locations/ICEntertainment';
 import Lab from './locations/Lab';
-import Library from './locations/Library';
+// import Library from './locations/Library';
 import PoliceStationPrison from './locations/PoliceStationPrison';
 import School from './locations/School';
-import SportsCentre from './locations/SportsCentre';
+// import SportsCentre from './locations/SportsCentre';
 import YellowGambleDrug from './locations/YellowGambleDrug';
 
 const Admin = () => {
@@ -108,10 +108,10 @@ const Admin = () => {
         (location === 7) ? <Hospital setFormData={setFormData} /> :
         (location === 8) ? <ICEntertainment setFormData={setFormData} /> :
         (location === 9) ? <Lab setFormData={setFormData} /> :
-        (location === 10) ? <Library setFormData={setFormData} /> : 
+        // (location === 10) ? <Library setFormData={setFormData} /> : 
         (location === 11) ? <PoliceStationPrison setFormData={setFormData} /> :
         (location === 12) ? <School setFormData={setFormData} /> :
-        (location === 13) ? <SportsCentre setFormData={setFormData} /> :
+        // (location === 13) ? <SportsCentre setFormData={setFormData} /> :
         (location === 14) ? <YellowGambleDrug setFormData={setFormData} /> :
         <></>
       }

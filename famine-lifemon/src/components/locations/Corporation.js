@@ -5,6 +5,7 @@ import { TextField, MenuItem } from '@mui/material';
 const Corporation = ({ setFormData }) => {
   const [type, setType] = useState(0);
   const [result, setResult] = useState(0);
+  const [amount, setAmount] = useState(1);
 
   return (
     <>
