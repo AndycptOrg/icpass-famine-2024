@@ -1,37 +1,36 @@
 import React, { useState } from 'react'
 
-import { TextField, MenuItem } from '@mui/material';
+import LocationRenderer from './LocationRenderer';
 
 const Farm = ({ setFormData }) => {
-  const [result, setResult] = useState(true);
+  const [result, setResult] = useState(1);
 
-  return (
-    <TextField
-      required
-      id="result-select"
-      size='large'
-      value={result}
-      label="Result"
-      onChange={e => { 
-        const value = e.target.value;
-        setResult(value);
-        setFormData({
-          food: -1,
-          happiness: -1,
-          money: value ? 150 : 50,
-          charity: 0,
-          married: false,
-        });
-      }}
-      sx={{width: '20em'}}
-      select
-      fullWidth
-      margin='dense'
-    >
-      <MenuItem key={0} value={true}>Successful</MenuItem>
-      <MenuItem key={1} value={false}>Fail</MenuItem>
-    </TextField>
-  )
+  const handleResult = e => {
+    const value = Number(e.target.value);
+    setResult(value);
+    setFormData({
+      food: -1,
+      happiness: -1,
+      money: value ? 150 : 50,
+      charity: 0,
+      married: false,
+    });
+  }
+
+  const controls = [
+    {
+      id: 'result-select',
+      label: 'Result',
+      value: result,
+      onChange: handleResult,
+      select: true,
+      options: [{ value: 1, label: 'Successful' }, { value: 0, label: 'Fail' }],
+      sx: { width: '20em' },
+      required: true,
+    }
+  ];
+
+  return <LocationRenderer controls={controls} />
 }
 
 export default Farm;

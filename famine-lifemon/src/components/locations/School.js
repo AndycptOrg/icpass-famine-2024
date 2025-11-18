@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 
-import { TextField, MenuItem } from '@mui/material';
+import { MenuItem } from '@mui/material';
+import LocationRenderer from './LocationRenderer';
 
 const School = ({ setFormData }) => {
   const [type, setType] = useState(0);
@@ -30,97 +31,82 @@ const School = ({ setFormData }) => {
   const Level3ID = levels.indexOf('中四');
   const Level4ID = levels.indexOf('中五');
 
-  return (
-    <>
-      <TextField
-        required
-        id="type-select"
-        size='large'
-        value={type}
-        label="Type"
-        onChange={e => {
-          const value = e.target.value;
-          setType(value);
-          setFormData({
-            food: - value - 1,
-            happiness: -1,
-            money: 0,
-            education: { original: value, pass: result },
-            charity: 0,
-            married: false,
-          });
-        }}
-        sx={{width: '20em'}}
-        select
-        fullWidth
-        margin='dense'
-      >
-        {
-          roles.map((role, index) => (
-            <MenuItem key={index} value={index}>{role}</MenuItem>
-          ))
-        }
-      </TextField>
-      {
-        (type !== TeacherID) ?
-        <TextField
-          required
-          id="result-select"
-          size='large'
-          value={result}
-          label="Result"
-          onChange={e => {
-            const value = e.target.value;
-            setResult(value);
-            setFormData({
-              food: - type - 1,
-              happiness: -1,
-              money: 0,
-              education: { original: type, pass: value },
-              charity: 0,
-              married: false,
-            });
-          }}
-          sx={{width: '20em'}}
-          select
-          fullWidth
-          margin='dense'
-          >
-          <MenuItem key={0} value={1}>Pass</MenuItem>
-          <MenuItem key={1} value={0}>Fail</MenuItem>
-        </TextField> :
-        <TextField
-          required
-          id="result-select"
-          size='large'
-          value={result}
-          label="Level reached"
-          onChange={e => {
-            const value = e.target.value;
-            setResult(value);
-            const money = (value) * 50;
-            setFormData({
-              food: - 1,
-              happiness: -1,
-              money: money,
-              charity: 0,
-              married :false,
-            });
-          }}
-          sx={{width: '20em'}}
-          select
-          fullWidth
-          margin='dense'
-        >
-          {
-            levels.map((level, index) => (
-              <MenuItem key={index} value={index + 1}>{level}</MenuItem>
-            ))
-          }
-        </TextField>
-      }
-    </>
-  )
+  // handlers convert input into the canonical form data
+  const handleTypeChange = e => {
+    const value = Number(e.target.value);
+    setType(value);
+    setFormData({
+      food: - value - 1,
+      happiness: -1,
+      money: 0,
+      education: { original: value, pass: result },
+      charity: 0,
+      married: false,
+    });
+  }
+
+  const handleResultChange = e => {
+    const value = Number(e.target.value);
+    setResult(value);
+    setFormData({
+      food: - type - 1,
+      happiness: -1,
+      money: 0,
+      education: { original: type, pass: value },
+      charity: 0,
+      married: false,
+    });
+  }
+
+  const handleTeacherLevel = e => {
+    const value = Number(e.target.value);
+    setResult(value);
+    const levelPayouts = { 1: 50, 2: 100, 3: 150, 4: 200 };
+    const money = levelPayouts[value] ?? 0;
+    setFormData({
+      food: -1,
+      happiness: -1,
+      money,
+      charity: 0,
+      married: false,
+    });
+  }
+
+  // descriptor for the renderer
+  const controls = [
+    {
+      id: 'type-select',
+      label: 'Type',
+      value: type,
+      onChange: handleTypeChange,
+      select: true,
+      options: roles.map((role, index) => ({ value: index, label: role })),
+      sx: { width: '20em' },
+      required: true,
+    },
+    // conditional control depending on role
+    (type !== TeacherID) ? {
+      id: 'result-select',
+      label: 'Result',
+      value: result,
+      onChange: handleResultChange,
+      select: true,
+      options: [{ value: 1, label: 'Pass' }, { value: 0, label: 'Fail' }],
+      sx: { width: '20em' },
+      required: true,
+    } : {
+      id: 'result-select',
+      label: 'Level reached',
+      value: result,
+      onChange: handleTeacherLevel,
+      select: true,
+      options: levels.map((level, index) => ({ value: index + 1, label: level })),
+      sx: { width: '20em' },
+      required: true,
+    }
+  ].filter(Boolean);
+
+  return <LocationRenderer controls={controls} />
 }
 
 export default School;

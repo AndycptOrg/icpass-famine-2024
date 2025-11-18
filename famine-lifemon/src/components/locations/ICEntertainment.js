@@ -1,42 +1,36 @@
 import React, { useState } from 'react'
 
-import { TextField, MenuItem } from '@mui/material';
+import LocationRenderer from './LocationRenderer';
 
 const ICEntertainment = ({ setFormData }) => {
   const [type, setType] = useState(true);
-  const [result, setResult] = useState(true);
 
-  const ActressSingerID = true;
-  // const InfluencerID = false;
+  const handleTypeChange = e => {
+    const value = e.target.value === 'true' || e.target.value === true;
+    setType(value);
+    setFormData({
+      food: -1,
+      happiness: 2,
+      money: -50,
+      charity: 0,
+      married: false,
+    });
+  }
 
-  return (
-    <>
-      <TextField
-        required
-        id="type-select"
-        size='large'
-        value={type}
-        label="Type"
-        onChange={e => { 
-          const value = e.target.value;
-          setType(value);
-          setFormData({
-            food: -1,
-            happiness: 2,
-            money: -50,
-            charity: 0,
-            married: false,
-          });
-        }}
-        sx={{width: '20em'}}
-        select
-        fullWidth
-        margin='dense'
-      >
-        <MenuItem key={0} value={true}>KTV</MenuItem>
-      </TextField>
-    </>
-  )
+  const controls = [
+    {
+      id: 'type-select',
+      label: 'Type',
+      value: type,
+      onChange: handleTypeChange,
+      select: true,
+      options: [{ value: true, label: 'KTV' }],
+      sx: { width: '20em' },
+      required: true,
+    }
+  ];
+
+  return <LocationRenderer controls={controls} />
 }
 
 export default ICEntertainment;
