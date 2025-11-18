@@ -3,8 +3,7 @@ import React, { useState } from 'react'
 import { TextField, MenuItem } from '@mui/material';
 
 const Church = ({ setFormData }) => {
-  const [type, setType] = useState(true);
-  // const [result, setResult] = useState(500);
+  const [isMarrying, setIsMarrying] = useState(true);
 
   const options = [
     'Marriage',
@@ -14,31 +13,23 @@ const Church = ({ setFormData }) => {
   const MarriageID = options.indexOf('Marriage');
   const DivorceID = options.indexOf('Divorce');
 
-  const CoupleID = options.indexOf('Couple');
-  const FamilyID = options.indexOf('Family');
-
   return (
     <>
     <TextField
       required
       id="type-select"
       size='large'
-      value={type}
+      value={options[isMarrying ? MarriageID : DivorceID]}
       label="Type"
       onChange={e => {
-        const value = e.target.value;
-        setType(value);
+        const value = e.target.value === MarriageID;
+        setIsMarrying(value);
         setFormData({
-          food: value === MarriageID ? -2 : 0,
-          happiness: value === MarriageID ? 2 : -2,
-          money: value === MarriageID ? -500 : 0,
+          food: value ? -2 : 0,
+          happiness: value ? 2 : -2,
+          money: value ? -500 : 0,
           charity: 0,
-          married: value === MarriageID,
-          // food: value === CoupleID ? -3 : 0,
-          // happiness: value === CoupleID ? 6 : 3,
-          // money: 0,
-          // charity: 0,
-          // married: value,
+          married: value,
         });
       }}
       sx={{width: '20em'}}
