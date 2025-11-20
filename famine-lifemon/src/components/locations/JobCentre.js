@@ -23,7 +23,7 @@ const JobCentre = ({ setFormData }) => {
         });
     }
 
-    const handleAmountBlur = e => {
+    const handleAmount = e => {
         const value = Math.min(100, Math.max(0, Number(e.target.value)));
         setAmount(value);
         setFormData({

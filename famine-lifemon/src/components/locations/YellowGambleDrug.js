@@ -27,7 +27,7 @@ const YellowGambleDrug = ({ setFormData }) => {
     });
   }
 
-  const handleCasinoBlur = e => {
+  const handleCasino = e => {
     const value = Math.min(500, Math.max(-500, Number(e.target.value)));
     setAmount(value);
     setFormData({
@@ -78,8 +78,7 @@ const YellowGambleDrug = ({ setFormData }) => {
       id: 'amount-select',
       label: 'Amount',
       value: amount,
-      onChange: e => setAmount(Number(e.target.value)),
-      onBlur: handleCasinoBlur,
+      onChange: handleCasino,
       select: false,
       sx: { width: '20em' },
       required: true,

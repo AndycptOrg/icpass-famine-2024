@@ -28,7 +28,7 @@ const PoliceStationPrison = ({ setFormData }) => {
     });
   }
 
-  const handlePrisonerAmountBlur = e => {
+  const handlePrisonerAmount = e => {
     const value = Math.min(200, Math.max(-150, Number(e.target.value)));
     setAmount(value);
     setFormData({
@@ -64,8 +64,7 @@ const PoliceStationPrison = ({ setFormData }) => {
       id: 'amount-select',
       label: 'Amount',
       value: amount,
-      onChange: e => setAmount(Number(e.target.value)),
-      onBlur: handlePrisonerAmountBlur,
+      onChange: handlePrisonerAmount,
       select: false,
       sx: { width: '20em' },
       required: true,
