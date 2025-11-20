@@ -10,6 +10,13 @@ const PoliceStationPrison = ({ setFormData }) => {
   const PoliceID = roles.indexOf('Police');
   const PrisonerID = roles.indexOf('Prisoner');
 
+  const prisonerOutcomes = [
+    { name: 'Betray Win', amount: 100 },
+    { name: 'Betray Lose', amount: -200 },
+    { name: 'Loyal Win', amount: -50 },
+    { name: 'Loyal Lose', amount: -150 },
+  ];
+
   const handleRoleChange = e => {
     const value = Number(e.target.value);
     setType(value);
@@ -29,7 +36,7 @@ const PoliceStationPrison = ({ setFormData }) => {
   }
 
   const handlePrisonerAmount = e => {
-    const value = Math.min(200, Math.max(-150, Number(e.target.value)));
+    const value = e.target.value;
     setAmount(value);
     setFormData({
       food: 0,
@@ -60,16 +67,16 @@ const PoliceStationPrison = ({ setFormData }) => {
       options: ([...Array(6).keys()]).map(i => ({ value: i, label: String(i) })),
       sx: { width: '20em' },
       required: true,
-    } : type === PrisonerID ? {
+    } : 
+    type === PrisonerID ? {
       id: 'amount-select',
-      label: 'Amount',
+      label: 'outcome',
       value: amount,
       onChange: handlePrisonerAmount,
-      select: false,
+      select: true,
+      options: prisonerOutcomes.map((o, i) => ({ value: o.amount, label: o.name })),
       sx: { width: '20em' },
       required: true,
-      type: 'number',
-      inputProps: { min: -150, max: 200 },
     } : null
   ].filter(Boolean);
 
