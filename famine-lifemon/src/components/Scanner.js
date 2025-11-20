@@ -116,7 +116,7 @@ export default function Scanner({ setChecked, snapshot, id }) {
 				open={uneducatedOpen}
 				autoHideDuration={2000}
 				onClose={
-					(e) => setFailOpen(false)
+					(e) => setUneducatedOpen(false)
 				}
 				TransitionComponent={Slide}
 			>
