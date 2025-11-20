@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { MenuItem, TextField } from '@mui/material';
 
 import Code from './Code';
-import BobaShop from './locations/BobaShop';
 import Church from './locations/Church';
 import CommunityCentre from './locations/CommunityCentre';
 import Corporation from './locations/Corporation';
@@ -13,15 +12,12 @@ import Hospital from './locations/Hospital';
 import ICEntertainment from './locations/ICEntertainment';
 import JobCentre from './locations/JobCentre';
 import Lab from './locations/Lab';
-// import Library from './locations/Library';
 import PoliceStationPrison from './locations/PoliceStationPrison';
 import School from './locations/School';
-// import SportsCentre from './locations/SportsCentre';
 import YellowGambleDrug from './locations/YellowGambleDrug';
 
 const Admin = () => {
   const locations = [
-    // 'Boba Shop',
     'Church',
     'Community Centre',
     'Corporation',
@@ -32,13 +28,10 @@ const Admin = () => {
     'IC Entertainment',
     'Job Centre',
     'Lab',
-    'Library',
     'Police Station & Prison',
     'School',
-    'Sports Centre',
     'Yellow Gamble Drug',
   ];
-  const BobaShopID = locations.indexOf('Boba Shop');
   const ChurchID = locations.indexOf('Church');
   const CommunityCentreID = locations.indexOf('Community Centre');
   const CorporationID = locations.indexOf('Corporation');
@@ -49,10 +42,8 @@ const Admin = () => {
   const JobCentreID = locations.indexOf('Job Centre');
   const EntertainmentID = locations.indexOf('IC Entertainment');
   const LabID = locations.indexOf('Lab');
-  const LibraryID = locations.indexOf('Library');
   const PoliceStationPrisonID = locations.indexOf('Police Station & Prison');
   const SchoolID = locations.indexOf('School');
-  const SportsCentreID = locations.indexOf('Sports Centre');
   const GambaID = locations.indexOf('Yellow Gamble Drug');
 
 	const [formData, setFormData] = useState({
@@ -108,7 +99,6 @@ const Admin = () => {
         }
       </TextField>
       {
-        (location === BobaShopID) ? <BobaShop setFormData={setFormData} /> :
         (location === ChurchID) ? <Church setFormData={setFormData} /> :
         (location === CommunityCentreID) ? <CommunityCentre setFormData={setFormData} /> :
         (location === CorporationID) ? <Corporation setFormData={setFormData} /> :
