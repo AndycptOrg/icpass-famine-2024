@@ -1,25 +1,32 @@
 import React, { useState } from 'react'
 
 import LocationRenderer from './LocationRenderer';
+import { GraduateLevel } from './School';
 
 const Corporation = ({ setFormData }) => {
-  const [type, setType] = useState(0);
-  const [result, setResult] = useState(0);
+  const [type, setType] = useState(-1);
+  const [result, setResult] = useState(-1);
 
   const roles = ['Banker', 'Lawyer'];
   const BankerID = roles.indexOf('Banker');
   const LawyerID = roles.indexOf('Lawyer');
 
   const results = ['Winner', 'Loser'];
+  const WinnerID = results.indexOf('Winner');
+  const LoserID = results.indexOf('Loser');
 
   const handleTypeChange = e => {
     const value = Number(e.target.value);
     setType(value);
-    setResult(0);
+    // set invalid value initally
+    setResult(-1);
     setFormData({
       food: -1,
       happiness: -1,
       money: value === BankerID ? 250 : (value === LawyerID ? 220 : 150),
+      education: {
+        requirement: GraduateLevel,
+      },
       charity: 0,
       married: false,
     });
@@ -31,7 +38,10 @@ const Corporation = ({ setFormData }) => {
     setFormData({
       food: -1,
       happiness: -1,
-      money: value === 0 ? 350 : 50,
+      money: value === WinnerID ? 350 : 50,
+      education: {
+        requirement: GraduateLevel,
+      },
       charity: 0,
       married: false,
     });

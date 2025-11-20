@@ -3,6 +3,11 @@ import React, { useState } from 'react'
 import { MenuItem } from '@mui/material';
 import LocationRenderer from './LocationRenderer';
 
+const PrimaryLevel = 0;
+const SecondaryLevel = 1;
+const UniversityLevel = 2;
+const GraduateLevel = 3;
+
 const School = ({ setFormData }) => {
   const [type, setType] = useState(0);
   const [result, setResult] = useState(1);
@@ -39,7 +44,7 @@ const School = ({ setFormData }) => {
       food: - value - 1,
       happiness: -1,
       money: 0,
-      education: { original: value, pass: result },
+      education: { requirement: value, pass: result },
       charity: 0,
       married: false,
     });
@@ -52,7 +57,7 @@ const School = ({ setFormData }) => {
       food: - type - 1,
       happiness: -1,
       money: 0,
-      education: { original: type, pass: value },
+      education: { requirement: type, pass: value },
       charity: 0,
       married: false,
     });
@@ -110,3 +115,5 @@ const School = ({ setFormData }) => {
 }
 
 export default School;
+
+export { PrimaryLevel, SecondaryLevel, UniversityLevel, GraduateLevel };

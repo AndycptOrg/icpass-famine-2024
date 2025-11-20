@@ -98,7 +98,7 @@ const Admin = () => {
         // value === 0 ? 100 :
         0
       ),
-      education: value === SchoolID ? { original: 0, pass: 1 } : undefined,
+      education: value === SchoolID ? { requirement: 0, pass: 1 } : undefined,
       charity: value === CommunityCentreID || value === LibraryID ? 5 : 0,
       married: value === ChurchID,
     });

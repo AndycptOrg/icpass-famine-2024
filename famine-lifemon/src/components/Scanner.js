@@ -49,7 +49,9 @@ export default function Scanner({ setChecked, snapshot, id }) {
 		if (snapshot.happiness + data.happiness < 0) return { result: 'fail', reason: 'sad' };
 		if (snapshot.money + data.money < 0) return { result: 'fail', reason: 'poor' };
 		// education requirement
-		if (!!data.education && snapshot.education !== data.education.original) return { result: 'fail', reason: 'uneducated' };
+		if (!!data.education && 							// education requirement present
+			snapshot.education < data.education.requirement)// sufficent education level
+			return { result: 'fail', reason: 'uneducated' };
 		// food bank availability (async)
 		if (!!data.foodBank) {
 			try {
@@ -80,7 +82,10 @@ export default function Scanner({ setChecked, snapshot, id }) {
 				return;
 			}
 			// all validations passed -> apply user updates
-			if (!!data.education) {
+			// if schooling update present, update education field too
+			if (!!data.education && 								// presence of education update
+				!!data.education.pass && 							// presence of pass field
+				snapshot.education === data.education.requirement) {// education update matches requirement
 				updateDoc(docRef, {
 					food: increment(data.food),
 					happiness: increment(data.happiness),
