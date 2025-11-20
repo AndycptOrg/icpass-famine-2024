@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import LocationRenderer from './LocationRenderer';
 
 const CommunityCentre = ({ setFormData }) => {
-  const [type, setType] = useState(0);
+  const [type, setType] = useState(-1);
 
   const roles = ['Recycling Operative', 'Collecting food waste'];
 

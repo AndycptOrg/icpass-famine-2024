@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import LocationRenderer from './LocationRenderer';
 
 const ICEntertainment = ({ setFormData }) => {
-  const [type, setType] = useState(true);
+  const [type, setType] = useState(null);
 
   const handleTypeChange = e => {
     const value = e.target.value === 'true' || e.target.value === true;

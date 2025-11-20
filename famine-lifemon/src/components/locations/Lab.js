@@ -3,15 +3,15 @@ import React, { useState } from 'react'
 import LocationRenderer from './LocationRenderer';
 
 const Lab = ({ setFormData }) => {
-  const [isScientist, setIsScientist] = useState(true);
-  const [amount, setAmount] = useState(1);
-  const [result, setResult] = useState(1);
+  const [isScientist, setIsScientist] = useState(null);
+  const [amount, setAmount] = useState(-1);
+  const [result, setResult] = useState(-1);
 
   const handleRoleChange = e => {
     const value = e.target.value === 'true' || e.target.value === true;
     setIsScientist(value);
-    setAmount(1);
-    setResult(1);
+    setAmount(-1);
+    setResult(-1);
     setFormData({
       food: -1,
       happiness: -1,
@@ -56,6 +56,7 @@ const Lab = ({ setFormData }) => {
       sx: { width: '20em' },
       required: true,
     },
+    isScientist === null ? null : 
     isScientist ? {
       id: 'amount-select',
       label: 'Amount',
@@ -75,7 +76,7 @@ const Lab = ({ setFormData }) => {
       sx: { width: '20em' },
       required: true,
     }
-  ];
+  ].filter(Boolean);
 
   return <LocationRenderer controls={controls} />
 }

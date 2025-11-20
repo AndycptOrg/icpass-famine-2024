@@ -79,28 +79,11 @@ const Admin = () => {
     const value = e.target.value;
     setLocation(value);
     setFormData({
-      food: value === BobaShopID || value === FoodBankID ? 1 :
-            value === LibraryID ? 0 :
-            value === ChurchID ? -3 :
-            -1,
-      happiness:  value === FoodBankID ? 1 :
-                  value === ChurchID ? 6 :
-                  value === CommunityCentreID ? 5 :
-                  value === BobaShopID || value === LibraryID ? 2 :
-                  value === EntertainmentID ? 2 :
-                  -1,
-      money: (
-        value === BobaShopID || value === FoodBankID ? -100 :
-        value === FactoryID || value === LabID || value === HospitalID ? 30 :
-        value === FarmID || value === LibraryID ? 150 :
-        value === EntertainmentID ? -50 :
-        value === CorporationID ? 250 :
-        // value === 0 ? 100 :
-        0
-      ),
-      education: value === SchoolID ? { requirement: 0, pass: 1 } : undefined,
-      charity: value === CommunityCentreID || value === LibraryID ? 5 : 0,
-      married: value === ChurchID,
+      food: 0,
+      happiness: 0,
+      money: 0,
+      charity: 0,
+      married: false,
     });
   }
 

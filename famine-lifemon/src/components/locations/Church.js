@@ -4,7 +4,7 @@ import { MenuItem } from '@mui/material';
 import LocationRenderer from './LocationRenderer';
 
 const Church = ({ setFormData }) => {
-  const [isMarrying, setIsMarrying] = useState(true);
+  const [type, setType] = useState(-1);
 
   const options = ['Marriage', 'Divorce'];
   const MarriageID = options.indexOf('Marriage');
@@ -12,8 +12,8 @@ const Church = ({ setFormData }) => {
 
   const handleTypeChange = e => {
     const value = Number(e.target.value);
+    setType(value);
     const marrying = value === MarriageID;
-    setIsMarrying(marrying);
     setFormData({
       food: marrying ? -2 : 0,
       happiness: marrying ? 2 : -2,
@@ -27,7 +27,7 @@ const Church = ({ setFormData }) => {
     {
       id: 'type-select',
       label: 'Type',
-      value: isMarrying ? MarriageID : DivorceID,
+      value: type,
       onChange: handleTypeChange,
       select: true,
       options: options.map((o, i) => ({ value: i, label: o })),

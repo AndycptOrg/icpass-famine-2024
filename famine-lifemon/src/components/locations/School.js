@@ -9,8 +9,8 @@ const UniversityLevel = 2;
 const GraduateLevel = 3;
 
 const School = ({ setFormData }) => {
-  const [type, setType] = useState(0);
-  const [result, setResult] = useState(1);
+  const [type, setType] = useState(-1);
+  const [result, setResult] = useState(-1);
 
   const roles = [
     'Primary',

@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import LocationRenderer from './LocationRenderer';
 
 const Farm = ({ setFormData }) => {
-  const [result, setResult] = useState(1);
+  const [result, setResult] = useState(-1);
 
   const handleResult = e => {
     const value = Number(e.target.value);

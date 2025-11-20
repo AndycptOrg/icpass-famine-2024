@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import LocationRenderer from './LocationRenderer';
 
 const Factory = ({ setFormData }) => {
-  const [amount, setAmount] = useState(1);
+  const [amount, setAmount] = useState(-1);
 
   const handleAmountChange = e => {
     const value = Number(e.target.value);

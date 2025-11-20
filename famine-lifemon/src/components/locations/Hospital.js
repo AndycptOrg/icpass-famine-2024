@@ -3,12 +3,13 @@ import React, { useState } from 'react'
 import LocationRenderer from './LocationRenderer';
 
 const Hospital = ({ setFormData }) => {
-  const [isNurse, setIsNurse] = useState(true);
-  const [amount, setAmount] = useState(1);
+  const [isNurse, setIsNurse] = useState(null);
+  const [amount, setAmount] = useState(-1);
 
   const handleRoleChange = e => {
     const value = e.target.value === 'true' || e.target.value === true;
     setIsNurse(value);
+    setAmount(-1);
     setFormData({
       food: -1,
       happiness: -1,

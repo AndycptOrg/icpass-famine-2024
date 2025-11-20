@@ -3,9 +3,9 @@ import React, { useState } from 'react'
 import LocationRenderer from './LocationRenderer';
 
 const YellowGambleDrug = ({ setFormData }) => {
-  const [type, setType] = useState(0);
-  const [amount, setAmount] = useState(0);
-  const [result, setResult] = useState(1);
+  const [type, setType] = useState(-1);
+  const [amount, setAmount] = useState(-1);
+  const [result, setResult] = useState(-1);
 
   const options = ['Casino', 'Drug House', 'Club', 'Scammer'];
   const CasinoID = options.indexOf('Casino');

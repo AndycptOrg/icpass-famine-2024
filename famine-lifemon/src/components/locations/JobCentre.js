@@ -3,8 +3,8 @@ import React, { useState } from 'react'
 import LocationRenderer from './LocationRenderer';
 
 const JobCentre = ({ setFormData }) => {
-    const [type, setType] = useState(0);
-    const [amount, setAmount] = useState(1);
+    const [type, setType] = useState(-1);
+    const [amount, setAmount] = useState(-1);
 
     const roles = ['Food Delivery', 'Cleaner'];
     const FoodDeliveryID = roles.indexOf('Food Delivery');
@@ -50,8 +50,7 @@ const JobCentre = ({ setFormData }) => {
             id: 'amount-select',
             label: 'Amount',
             value: amount,
-            onChange: e => setAmount(Number(e.target.value)),
-            onBlur: handleAmountBlur,
+            onChange: handleAmount,
             select: false,
             sx: { width: '20em' },
             required: true,

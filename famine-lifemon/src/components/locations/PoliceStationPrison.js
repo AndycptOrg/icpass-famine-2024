@@ -3,8 +3,8 @@ import React, { useState } from 'react'
 import LocationRenderer from './LocationRenderer';
 
 const PoliceStationPrison = ({ setFormData }) => {
-  const [type, setType] = useState(0);
-  const [amount, setAmount] = useState(0);
+  const [type, setType] = useState(-1);
+  const [amount, setAmount] = useState(-1);
 
   const roles = ['Police', 'Prisoner'];
   const PoliceID = roles.indexOf('Police');

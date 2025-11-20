@@ -3,8 +3,8 @@ import React, { useState } from 'react'
 import LocationRenderer from './LocationRenderer';
 
 const FoodBank = ({ setFormData }) => {
-  const [type, setType] = useState(0);
-  const [amount, setAmount] = useState(1);
+  const [type, setType] = useState(-1);
+  const [amount, setAmount] = useState(-1);
   const [price, setPrice] = useState(-100);
 
   const roles = ['Customer', 'Donor', 'Recipient'];
