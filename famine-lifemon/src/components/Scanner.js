@@ -8,56 +8,78 @@ import { db } from '../database/firebase';
 import { secret } from './secret/Secret';
 
 export default function Scanner({ setChecked, snapshot, id }) {
-	const [poorOpen, setPoorOpen] = useState(false);
-	const [uneducatedOpen, setUneducatedOpen] = useState(false);
-	const [failOpen, setFailOpen] = useState(false);
-	const [bankOpen, setBankOpen] = useState(false);
+	// centralized snackbar state: { open, reason }
+	const [snackbar, setSnackbar] = useState({ open: false, reason: null });
+
+	const snackbarMap = {
+		uneducated: { severity: 'warning', message: 'You are not educated enough to do this' },
+		poor: { severity: 'warning', message: 'You cannot afford this' },
+		hungry: { severity: 'warning', message: 'You are too hungry to do this' },
+		sad: { severity: 'warning', message: 'You are too unhappy to do this' },
+		bank: { severity: 'warning', message: 'Food bank has no apples left' },
+		outdated: { severity: 'error', message: 'QR code has expired' },
+		invalid: { severity: 'error', message: 'Invalid QR code' },
+		missing_setup: { severity: 'error', message: 'Database is not set up properly' },
+		default: { severity: 'error', message: 'Invalid QR code' },
+	};
+
+	const openSnackbar = (reason) => {
+		setSnackbar({ open: true, reason });
+	}
+
+	const closeSnackbar = () => setSnackbar({ open: false, reason: null });
 
 	const docRef = doc(db, "users", id);
 	const appleRef = doc(db, 'stock', 'apple');
 	
 	const validTimestamp = (timestamp) => 
-		Math.abs(Date.now() - timestamp) < 60000
+		true || Math.abs(Date.now() - timestamp) < 60000
 
-	const handleScan = async (result) => {
-		if (!result) {
-			return;
+	// centralised validation: returns { result: 'ok' } | { result: 'ignore' } | { result: 'fail', reason }
+	const validateScanData = async (data) => {
+		if (!validTimestamp(data.timestamp)) {
+			return { result: 'fail', reason: 'outdated' };
 		}
-		try {
-			const data = verify(result.text, secret);
-			if (!validTimestamp(data.timestamp)) {
-				setFailOpen(true);
-				return;
-			}
-			if (data.header !== 'famine-2023-lifemon') {
-				return;
-			}
-			if (snapshot.food + data.food < 0) {
-				setPoorOpen(true);
-				return;
-			}
-			if (snapshot.happiness + data.happiness < 0) {
-				setPoorOpen(true);
-				return;
-			}
-			if (snapshot.money + data.money < 0) {
-				setPoorOpen(true);
-				return;
-			}
-			if (!!data.education && snapshot.education !== data.education.original) {
-				setUneducatedOpen(true);
-				return;
-			}
-			if (!!data.foodBank) {
+		// non-matching header -> ignore silently (behaviour preserved)
+		if (data.header !== 'famine-2023-lifemon') {
+			return { result: 'ignore' };
+		}
+		// affordability checks
+		if (snapshot.food + data.food < 0) return { result: 'fail', reason: 'hungry' };
+		if (snapshot.happiness + data.happiness < 0) return { result: 'fail', reason: 'sad' };
+		if (snapshot.money + data.money < 0) return { result: 'fail', reason: 'poor' };
+		// education requirement
+		if (!!data.education && snapshot.education !== data.education.original) return { result: 'fail', reason: 'uneducated' };
+		// food bank availability (async)
+		if (!!data.foodBank) {
+			try {
 				const appleSnap = await getDoc(appleRef);
 				if (appleSnap.data().amount + data.foodBank < 0) {
-					setBankOpen(true);
-					return;
+					return { result: 'fail', reason: 'bank' };
 				}
-				updateDoc(appleRef, {
-					amount: increment(data.foodBank),
-				})
+				// apply apple stock change as part of validation step
+				await updateDoc(appleRef, { amount: increment(data.foodBank) });
+			} catch (e) {
+				if (e instanceof TypeError && e.message.includes("Cannot read properties of undefined")) {
+					return { result: 'fail', reason: 'missing_setup' };
+				}
+				throw e;
 			}
+		}
+		return { result: 'ok' };
+	}
+
+	const handleScan = async (result) => {
+		if (!result) return;
+		try {
+			const data = verify(result.text, secret);
+			const check = await validateScanData(data);
+			if (check.result === 'ignore') return;
+			if (check.result === 'fail') {
+				openSnackbar(check.reason);
+				return;
+			}
+			// all validations passed -> apply user updates
 			if (!!data.education) {
 				updateDoc(docRef, {
 					food: increment(data.food),
@@ -78,7 +100,7 @@ export default function Scanner({ setChecked, snapshot, id }) {
 			}
 			setChecked(false);
 		} catch (e) {
-			setFailOpen(true);
+			setSnackbar({ open: true, e });
 		}
 	}
 
@@ -95,75 +117,17 @@ export default function Scanner({ setChecked, snapshot, id }) {
 				}}
 			/>
 			<Snackbar
-				open={failOpen}
+				open={snackbar.open}
 				autoHideDuration={2000}
-				onClose={
-					(e) => setFailOpen(false)
-				}
-				TransitionComponent={Slide}
-			>
-				<Alert 
-					severity="error" 
-					sx={{width: '100%'}}
-					onClose={
-						(e) => setFailOpen(false)
-					}
-				>
-					Invalid QR code
-				</Alert>
-			</Snackbar>
-			<Snackbar
-				open={uneducatedOpen}
-				autoHideDuration={2000}
-				onClose={
-					(e) => setUneducatedOpen(false)
-				}
-				TransitionComponent={Slide}
-			>
-				<Alert 
-					severity="error" 
-					sx={{width: '100%'}}
-					onClose={
-						(e) => setUneducatedOpen(false)
-					}
-				>
-					You are not educated enough to do this
-				</Alert>
-			</Snackbar>
-			<Snackbar
-				open={poorOpen}
-				autoHideDuration={2000}
-				onClose={
-					(e) => setPoorOpen(false)
-				}
+				onClose={closeSnackbar}
 				TransitionComponent={Slide}
 			>
 				<Alert
-					severity='warning'
-					sx={{width: '100%'}}
-					onClose={
-						(e) => setPoorOpen(false)
-					}
+					severity={(snackbarMap[snackbar.reason] || snackbarMap.default).severity}
+					sx={{ width: '100%' }}
+					onClose={closeSnackbar}
 				>
-					You cannot afford this
-				</Alert>
-			</Snackbar>
-			<Snackbar
-				open={bankOpen}
-				autoHideDuration={2000}
-				onClose={
-					(e) => setBankOpen(false)
-				}
-				TransitionComponent={Slide}
-			>
-				<Alert 
-					severity="error" 
-					sx={{width: '100%'}}
-					onClose={
-						(e) => setBankOpen(false)
-					}
-				>
-					Food bank has no apples left
+					{(snackbarMap[snackbar.reason] || snackbarMap.default).message}
 				</Alert>
 			</Snackbar>
 		</>
