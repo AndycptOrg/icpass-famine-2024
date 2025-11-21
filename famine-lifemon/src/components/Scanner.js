@@ -48,7 +48,7 @@ export default function Scanner({ setChecked, snapshot, id }) {
 			return { result: 'ignore' };
 		}
 		// affordability checks
-		if (snapshot.food + data.food < 0) return { result: 'fail', reason: 'hungry' };
+		if (snapshot.food + snapshot.charityFood + data.food < 0) return { result: 'fail', reason: 'hungry' };
 		if (snapshot.happiness + data.happiness < 0) return { result: 'fail', reason: 'sad' };
 		if (snapshot.money + data.money < 0) return { result: 'fail', reason: 'poor' };
 		// education requirement
@@ -84,118 +84,120 @@ export default function Scanner({ setChecked, snapshot, id }) {
 		return { result: 'ok' };
 	}
 
+	// updateData receives the transaction and scanned data
+	const updateData = async (tx, data) => {
+		const userUpdatePayload = {};
+		// handle divorce flow
+		if (data.married !== undefined && String(data.married).toLowerCase() === 'divorce') {
+			// read ahead for marriages involving this user
+			let preReads = null;
+			try {
+				const q = query(collection(db, 'marriages'), where('participants', 'array-contains', id));
+				const qSnap = await getDocs(q);
+				preReads = qSnap.docs.map(d => ({ id: d.id, data: d.data() }));
+			} catch (e) {
+				return { result: 'fail', reason: e.toString() };
+			}
+			if (!preReads) return { result: 'fail', reason: 'Something happened while reading marriage data' };
+
+			// count how many valid divorces to award
+			const awardCount = preReads.reduce((acc, r) => (!r.data.hasDivorced ? acc + 1 : acc), 0);
+
+			// update all marriage docs to remove this user
+			for (const r of preReads) {
+				const mRef = doc(db, 'marriages', r.id);
+				tx.update(mRef, { participants: arrayRemove(id), hasDivorced: true });
+			}
+
+			// award and mark user as not married
+			userUpdatePayload.money = increment(700 * awardCount);
+			userUpdatePayload.married = false;
+		}
+
+		// handle marry (numeric id) flow
+		else if (data.married !== undefined && (typeof data.married === 'number' || (!isNaN(Number(data.married)) && String(data.married).length > 0))) {
+			const idStr = String(data.married);
+			const marriagesDocRef = doc(db, 'marriages', idStr);
+			const marriagesSnap = await tx.get(marriagesDocRef);
+			if (!marriagesSnap.exists()) {
+				tx.set(marriagesDocRef, {
+					participants: [id],
+					hasDivorced: false,
+				});
+			} else {
+				tx.update(marriagesDocRef, {
+					participants: arrayUnion(id),
+				});
+			}
+			// update user's doc in same transaction
+			userUpdatePayload.happiness = increment(data.happiness);
+			userUpdatePayload.money = increment(data.money);
+			userUpdatePayload.married = typeof data.married === 'number';
+		}
+		// Fallback: apply a user update payload (donations, education or default stats)
+		else {
+			userUpdatePayload.happiness = increment(data.happiness);
+			userUpdatePayload.money = increment(data.money);
+		}
+
+		// only increment education if passing condition met
+		if (data.education !== undefined && data.education.pass !== undefined && snapshot.education === data.education.requirement) {
+			userUpdatePayload.education = increment(data.education.pass);
+		}
+
+		// recieving donations where charityFood should increase
+		if (data.foodBank !== undefined && data.food !== undefined && data.food > 0) {
+			userUpdatePayload.charityFood = increment(data.food);
+		}
+
+		let falseCharity = 0;
+
+		// when costing food, cost charityFood first
+		if (data.food !== undefined &&  // costing food
+			data.food < 0) { 		// costing food
+			const charityFoodAvailable = snapshot.charityFood || 0;
+			const charityFoodToDeduct = Math.min(charityFoodAvailable, -data.food);
+			// when donating from food bank, track false charity
+			if (data.foodBank !== undefined) {
+				falseCharity += charityFoodToDeduct;
+			}
+			const remainingFoodToDeduct = -data.food + charityFoodToDeduct;
+			userUpdatePayload.charityFood = increment(-charityFoodToDeduct);
+			userUpdatePayload.food = increment(-remainingFoodToDeduct);
+		}
+
+		// when updating charity
+		if (data.charity !== undefined) {
+			userUpdatePayload.charity = increment(data.charity - 5*falseCharity);
+		}
+		tx.update(docRef, userUpdatePayload);
+		return { result: 'ok' };
+	}
+
 	const handleScan = async (result) => {
 		if (!result) return;
 		try {
+			// verify secret
 			const data = verify(result.text, secret);
-			const check = await validateScanData(data);
+
+			// enure update can be applied to user
+			let check = await validateScanData(data);
 			if (check.result === 'ignore') return;
 			if (check.result === 'fail') {
 				openSnackbar(check.reason);
 				return;
 			}
-			// all validations passed -> apply user updates
-			// if married update present, update married field
-			if (data.married !== undefined) {
-				// If married is a numeric identifier (allocated by Church), record this user's id in marriages/<id>
-				const marriedId = data.married;
-				try {
-					// Divorce flow: remove this user from all marriages, set hasDivorced and award money
-					if (String(marriedId).toLowerCase() === 'divorce') {
-						try {
-							// find all marriages containing this user (reads first)
-							const q = query(collection(db, 'marriages'), where('participants', 'array-contains', id));
-							const qSnap = await getDocs(q);
-							// pre-read the marriage data so all reads happen before writes
-							const preReads = qSnap.docs.map(d => ({ id: d.id, data: d.data() }));
-							let awardCount = preReads.reduce((acc, r) => (!r.data.hasDivorced ? acc + 1 : acc), 0);
-							// run transaction to perform writes only (remove participant and set hasDivorced, update user)
-							await runTransaction(db, async (tx) => {
-								for (const r of preReads) {
-									const mRef = doc(db, 'marriages', r.id);
-									// always remove participant and set hasDivorced true
-									tx.update(mRef, { participants: arrayRemove(id), hasDivorced: true });
-								}
-								// award 700 per removed marriage (excluding already-divorced) and mark user as not married
-								tx.update(docRef, {
-									money: increment(700 * awardCount),
-									married: false
-								});
-							});
-						} catch (err) {
-							openSnackbar(err.toString());
-						}
-						setChecked(false);
-						return;
-					}
-					if (typeof marriedId === 'number' || (!isNaN(Number(marriedId)) && String(marriedId).length > 0)) {
-						const idStr = String(marriedId);
-						const marriagesDocRef = doc(db, 'marriages', idStr);
-						// run transaction: initialize/update marriages doc and update user doc atomically
-						await runTransaction(db, async (tx) => {
-							const marriagesSnap = await tx.get(marriagesDocRef);
-							if (!marriagesSnap.exists()) {
-								// initialize with participants array and hasDivorced field
-								tx.set(marriagesDocRef, {
-									participants: [id],
-									hasDivorced: false,
-								});
-							} else {
-								// append participant
-								tx.update(marriagesDocRef, {
-									participants: arrayUnion(id),
-								});
-							}
-							// update user's doc in same transaction
-							tx.update(docRef, {
-								food: increment(data.food),
-								happiness: increment(data.happiness),
-								money: increment(data.money),
-								charity: increment(data.charity),
-								married: typeof data.married === 'number',
-							});
-						});
-					}
-				} catch (err) {
-					console.error('Failed to record marriage participation', err);
-					openSnackbar('fail');
-				}
-				// setChecked after transaction
-				setChecked(false);
-				return;
-			}
-			// handle giving and recieving donations
-			if (data.foodBank !== undefined) {
-				// when donating, donate from charityFood first
-				if (data.food > 0) {
-					// when receiving, just add to charityFood
-					await updateDoc(docRef, {
-						charityFood: increment(data.food),
-					});
-				}
-			}
-			// if schooling update present, update education field
-			if (data.education !== undefined && 					// presence of education update
-				data.education.pass !== undefined && 				// presence of pass field
-				snapshot.education === data.education.requirement) {// education update matches requirement
-				updateDoc(docRef, {
-					food: increment(data.food),
-					happiness: increment(data.happiness),
-					money: increment(data.money),
-					education: increment(data.education.pass),
-					charity: increment(data.charity),
-				});
-			} else {
-				updateDoc(docRef, {
-					food: increment(data.food),
-					happiness: increment(data.happiness),
-					money: increment(data.money),
-					charity: increment(data.charity),
-				});
+
+			// calculates true updates to user
+			check = await runTransaction(db, async (tx) => {
+				return updateData(tx, data);
+			});
+			if (check && check.result === 'fail') {
+				openSnackbar(check.reason);
 			}
 			setChecked(false);
 		} catch (e) {
-			setSnackbar({ open: true, e });
+			openSnackbar(e.toString());
 		}
 	}
 
