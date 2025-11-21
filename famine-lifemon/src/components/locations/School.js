@@ -46,7 +46,6 @@ const School = ({ setFormData }) => {
       money: 0,
       education: { requirement: value, pass: result },
       charity: 0,
-      married: false,
     });
   }
 
@@ -59,7 +58,6 @@ const School = ({ setFormData }) => {
       money: 0,
       education: { requirement: type, pass: value },
       charity: 0,
-      married: false,
     });
   }
 
@@ -73,7 +71,6 @@ const School = ({ setFormData }) => {
       happiness: -1,
       money,
       charity: 0,
-      married: false,
     });
   }
 

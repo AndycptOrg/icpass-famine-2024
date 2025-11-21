@@ -82,9 +82,21 @@ export default function Scanner({ setChecked, snapshot, id }) {
 				return;
 			}
 			// all validations passed -> apply user updates
-			// if schooling update present, update education field too
-			if (!!data.education && 								// presence of education update
-				!!data.education.pass && 							// presence of pass field
+			// if married update present, update married field
+			if (data.married !== undefined) {
+				updateDoc(docRef, {
+					food: increment(data.food),
+					happiness: increment(data.happiness),
+					money: increment(data.money),
+					charity: increment(data.charity),
+					married: data.married,
+				});
+				setChecked(false);
+				return;
+			}
+			// if schooling update present, update education field
+			if (data.education !== undefined && 								// presence of education update
+				data.education.pass !== undefined && 							// presence of pass field
 				snapshot.education === data.education.requirement) {// education update matches requirement
 				updateDoc(docRef, {
 					food: increment(data.food),
@@ -92,7 +104,6 @@ export default function Scanner({ setChecked, snapshot, id }) {
 					money: increment(data.money),
 					education: increment(data.education.pass),
 					charity: increment(data.charity),
-					married: snapshot.married || data.married,
 				});
 			} else {
 				updateDoc(docRef, {
@@ -100,7 +111,6 @@ export default function Scanner({ setChecked, snapshot, id }) {
 					happiness: increment(data.happiness),
 					money: increment(data.money),
 					charity: increment(data.charity),
-					married: snapshot.married || data.married,
 				});
 			}
 			setChecked(false);

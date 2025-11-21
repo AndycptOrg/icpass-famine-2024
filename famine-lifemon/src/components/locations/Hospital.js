@@ -15,7 +15,6 @@ const Hospital = ({ setFormData }) => {
       happiness: -1,
       money: value ? amount * 30 : amount * 50,
       charity: 0,
-      married: false,
     });
   }
 
@@ -27,7 +26,6 @@ const Hospital = ({ setFormData }) => {
       happiness: -1,
       money: isNurse ? value * 30 : value * 100,
       charity: 0,
-      married: false,
     });
   }
 

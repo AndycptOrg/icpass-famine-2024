@@ -13,7 +13,6 @@ const Factory = ({ setFormData }) => {
       happiness: -1,
       money: value * 30,
       charity: 0,
-      married: false,
     });
   }
 

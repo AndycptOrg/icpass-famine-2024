@@ -19,7 +19,6 @@ const JobCentre = ({ setFormData }) => {
             happiness: -1,
             money: value === FoodDeliveryID ? 70 : 0,
             charity: 0,
-            married: false,
         });
     }
 
@@ -31,7 +30,6 @@ const JobCentre = ({ setFormData }) => {
             happiness: 0,
             money: value,
             charity: 0,
-            married: false,
         });
     }
 

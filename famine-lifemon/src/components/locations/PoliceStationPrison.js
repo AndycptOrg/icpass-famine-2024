@@ -31,7 +31,6 @@ const PoliceStationPrison = ({ setFormData }) => {
       happiness: -1,
       money: 150 + value * 100,
       charity: 0,
-      married: false,
     });
   }
 
@@ -43,7 +42,6 @@ const PoliceStationPrison = ({ setFormData }) => {
       happiness: 0,
       money: value,
       charity: 0,
-      married: false,
     });
   }
 

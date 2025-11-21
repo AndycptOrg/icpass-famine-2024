@@ -20,6 +20,9 @@ const LocationRenderer = ({ controls = [] }) => {
           margin={ctrl.margin || 'dense'}
           required={Boolean(ctrl.required)}
         >
+          {ctrl.select && (ctrl.value === -1 || ctrl.value === null) && (
+            <MenuItem value={-1} disabled>Select…</MenuItem>
+          )}
           {Array.isArray(ctrl.options) && ctrl.options.map(opt => (
             <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
           ))}

@@ -13,7 +13,6 @@ const ICEntertainment = ({ setFormData }) => {
       happiness: 2,
       money: -50,
       charity: 0,
-      married: false,
     });
   }
 

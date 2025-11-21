@@ -21,7 +21,6 @@ const FoodBank = ({ setFormData }) => {
       happiness: role === CustomerID ? amount : role === DonorID ? amount * 5 : role === RecipientID ? 3 : undefined,
       money: role === CustomerID ? amount * price : role === DonorID || role === RecipientID ? 0 : undefined,
       charity: role === CustomerID ? 0 : role === DonorID ? amount * 5 : role === RecipientID ? 2 : undefined,
-      married: false,
     });
   }
 
@@ -33,8 +32,7 @@ const FoodBank = ({ setFormData }) => {
       foodBank: type === DonorID ? value : 0,
       happiness: type === CustomerID ? value : value * 5,
       money: type === CustomerID ? value * price : 0,
-      charity: type === DonorID ? 5 * value : 0,
-      married: false,
+  charity: type === DonorID ? 5 * value : 0,
     });
   }
 
@@ -46,8 +44,7 @@ const FoodBank = ({ setFormData }) => {
       foodBank: 0,
       happiness: amount,
       money: amount * value,
-      charity: 0,
-      married: false,
+  charity: 0,
     });
   }
 

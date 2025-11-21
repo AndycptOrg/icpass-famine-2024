@@ -51,7 +51,6 @@ const Admin = () => {
 		happiness: 0,
 		money: 0,
 		charity: 0,
-		married: false,
 	});
 
   const [location, setLocation] = useState('');
@@ -74,7 +73,6 @@ const Admin = () => {
       happiness: 0,
       money: 0,
       charity: 0,
-      married: false,
     });
   }
 

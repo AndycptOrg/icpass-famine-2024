@@ -13,7 +13,6 @@ const Farm = ({ setFormData }) => {
       happiness: -1,
       money: value ? 150 : 50,
       charity: 0,
-      married: false,
     });
   }
 
