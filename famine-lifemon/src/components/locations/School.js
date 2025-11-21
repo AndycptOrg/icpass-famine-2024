@@ -70,6 +70,7 @@ const School = ({ setFormData }) => {
       food: -1,
       happiness: -1,
       money,
+      education: { requirement: UniversityLevel },
       charity: 0,
     });
   }

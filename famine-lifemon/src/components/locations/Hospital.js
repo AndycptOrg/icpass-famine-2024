@@ -14,6 +14,7 @@ const Hospital = ({ setFormData }) => {
       food: -1,
       happiness: -1,
       money: value ? amount * 30 : amount * 50,
+      education: { requirement: value ? UniversityLevel : GraduateLevel },
       charity: 0,
     });
   }
@@ -25,6 +26,7 @@ const Hospital = ({ setFormData }) => {
       food: -1,
       happiness: -1,
       money: isNurse ? value * 30 : value * 100,
+      education: { requirement: isNurse ? UniversityLevel : GraduateLevel },
       charity: 0,
     });
   }

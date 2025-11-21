@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 
 import LocationRenderer from './LocationRenderer';
+import { PrimaryLevel } from './School';
 
 const JobCentre = ({ setFormData }) => {
     const [type, setType] = useState(-1);
@@ -17,6 +18,7 @@ const JobCentre = ({ setFormData }) => {
         setFormData({
             food: -1,
             happiness: -1,
+            education: { requirement: PrimaryLevel },
             money: value === FoodDeliveryID ? 70 : 0,
             charity: 0,
         });
@@ -28,6 +30,7 @@ const JobCentre = ({ setFormData }) => {
         setFormData({
             food: -1,
             happiness: 0,
+            education: { requirement: PrimaryLevel },
             money: value,
             charity: 0,
         });
