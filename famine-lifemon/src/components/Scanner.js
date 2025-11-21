@@ -123,8 +123,7 @@ export default function Scanner({ setChecked, snapshot, id }) {
 								});
 							});
 						} catch (err) {
-							console.error('Failed to process divorce', err);
-							openSnackbar('fail');
+							openSnackbar(err.toString());
 						}
 						setChecked(false);
 						return;
@@ -165,9 +164,19 @@ export default function Scanner({ setChecked, snapshot, id }) {
 				setChecked(false);
 				return;
 			}
+			// handle giving and recieving donations
+			if (data.foodBank !== undefined) {
+				// when donating, donate from charityFood first
+				if (data.food > 0) {
+					// when receiving, just add to charityFood
+					await updateDoc(docRef, {
+						charityFood: increment(data.food),
+					});
+				}
+			}
 			// if schooling update present, update education field
-			if (data.education !== undefined && 								// presence of education update
-				data.education.pass !== undefined && 							// presence of pass field
+			if (data.education !== undefined && 					// presence of education update
+				data.education.pass !== undefined && 				// presence of pass field
 				snapshot.education === data.education.requirement) {// education update matches requirement
 				updateDoc(docRef, {
 					food: increment(data.food),
@@ -213,7 +222,7 @@ export default function Scanner({ setChecked, snapshot, id }) {
 					sx={{ width: '100%' }}
 					onClose={closeSnackbar}
 				>
-					{(snackbarMap[snackbar.reason] || snackbarMap.default).message}
+					{snackbarMap.hasOwnProperty(snackbar.reason) ? (snackbarMap[snackbar.reason] || snackbarMap.default).message : snackbar.reason}
 				</Alert>
 			</Snackbar>
 		</>

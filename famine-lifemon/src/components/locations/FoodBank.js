@@ -16,11 +16,20 @@ const FoodBank = ({ setFormData }) => {
     const role = Number(e.target.value);
     setType(role);
     setFormData({
-      food: role === CustomerID ? amount : role === DonorID ? -amount : role === RecipientID ? 1 : undefined,
-      foodBank: role === CustomerID ? 0 : role === DonorID ? amount : role === RecipientID ? -1 : undefined,
+      food: role === CustomerID ? amount :
+            role === DonorID ? -amount :
+            role === RecipientID ? 1 :
+            undefined,
+      foodBank: role === CustomerID ? undefined :
+                role === DonorID ? amount :
+                role === RecipientID ? -1 :
+                undefined,
       happiness: role === CustomerID ? amount : role === DonorID ? amount * 5 : role === RecipientID ? 3 : undefined,
       money: role === CustomerID ? amount * price : role === DonorID || role === RecipientID ? 0 : undefined,
-      charity: role === CustomerID ? 0 : role === DonorID ? amount * 5 : role === RecipientID ? 2 : undefined,
+      charity:  role === CustomerID ? undefined :
+                role === DonorID ? amount * 5 :
+                role === RecipientID ? 2 :
+                undefined,
     });
   }
 
@@ -29,22 +38,25 @@ const FoodBank = ({ setFormData }) => {
     setAmount(value);
     setFormData({
       food: type === CustomerID ? value : -value,
-      foodBank: type === DonorID ? value : 0,
+      foodBank: type === CustomerID ? 0 :
+                type === DonorID ? value :
+                type === RecipientID ? undefined :
+                undefined,
       happiness: type === CustomerID ? value : value * 5,
       money: type === CustomerID ? value * price : 0,
-  charity: type === DonorID ? 5 * value : 0,
+      charity: type === DonorID ? 5 * value : 0,
     });
   }
 
+  // only affects customers
   const handlePriceChange = e => {
     const value = Number(e.target.value);
     setPrice(value);
     setFormData({
       food: amount,
-      foodBank: 0,
       happiness: amount,
       money: amount * value,
-  charity: 0,
+      charity: 0,
     });
   }
 
