@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 
 import LocationRenderer from './LocationRenderer';
+import { SecondaryLevel, UniversityLevel } from './School';
 
 const PoliceStationPrison = ({ setFormData }) => {
   const [type, setType] = useState(-1);
@@ -21,6 +22,23 @@ const PoliceStationPrison = ({ setFormData }) => {
     const value = Number(e.target.value);
     setType(value);
     setAmount(0);
+
+    if (value === PoliceID) {
+      setFormData({
+        food: -1,
+        happiness: -1,
+        money: 150, // default when 0 criminals caught
+        education: { requirement: UniversityLevel }, // requested education requirement
+        charity: 0,
+      });
+    } else if (value === PrisonerID) {
+      setFormData({
+        food: 0,
+        happiness: 0,
+        money: 0,
+        charity: 0,
+      });
+    }
   }
 
   const handlePoliceAmount = e => {
@@ -30,6 +48,7 @@ const PoliceStationPrison = ({ setFormData }) => {
       food: -1,
       happiness: -1,
       money: 150 + value * 100,
+      education: { requirement: UniversityLevel },
       charity: 0,
     });
   }
