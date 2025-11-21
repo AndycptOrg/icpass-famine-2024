@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { QrReader } from "@blackbox-vision/react-qr-reader";
 import { Snackbar, Slide, Alert } from '@mui/material';
-import { doc, updateDoc, increment, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, increment, getDoc, arrayUnion, runTransaction, collection, query, where, getDocs, arrayRemove } from 'firebase/firestore';
 import { verify } from 'jsonwebtoken';
 
 import { db } from '../database/firebase';
@@ -17,6 +17,7 @@ export default function Scanner({ setChecked, snapshot, id }) {
 		hungry: { severity: 'warning', message: 'You are too hungry to do this' },
 		sad: { severity: 'warning', message: 'You are too unhappy to do this' },
 		bank: { severity: 'warning', message: 'Food bank has no apples left' },
+		fail: { severity: 'warning', message: 'Failed to perform action' },
 		outdated: { severity: 'error', message: 'QR code has expired' },
 		invalid: { severity: 'error', message: 'Invalid QR code' },
 		missing_setup: { severity: 'error', message: 'Database is not set up properly' },
@@ -33,7 +34,7 @@ export default function Scanner({ setChecked, snapshot, id }) {
 	const appleRef = doc(db, 'stock', 'apple');
 	
 	const validTimestamp = (timestamp) => 
-		true || Math.abs(Date.now() - timestamp) < 60000
+		Math.abs(Date.now() - timestamp) < 60000
 
 	// centralised validation: returns { result: 'ok' } | { result: 'ignore' } | { result: 'fail', reason }
 	const validateScanData = async (data) => {
@@ -84,13 +85,68 @@ export default function Scanner({ setChecked, snapshot, id }) {
 			// all validations passed -> apply user updates
 			// if married update present, update married field
 			if (data.married !== undefined) {
-				updateDoc(docRef, {
-					food: increment(data.food),
-					happiness: increment(data.happiness),
-					money: increment(data.money),
-					charity: increment(data.charity),
-					married: data.married,
-				});
+				// If married is a numeric identifier (allocated by Church), record this user's id in marriages/<id>
+				const marriedId = data.married;
+				try {
+					// Divorce flow: remove this user from all marriages, set hasDivorced and award money
+					if (String(marriedId).toLowerCase() === 'divorce') {
+						try {
+							// find all marriages containing this user (reads first)
+							const q = query(collection(db, 'marriages'), where('participants', 'array-contains', id));
+							const qSnap = await getDocs(q);
+							// pre-read the marriage data so all reads happen before writes
+							const preReads = qSnap.docs.map(d => ({ id: d.id, data: d.data() }));
+							let awardCount = preReads.reduce((acc, r) => (!r.data.hasDivorced ? acc + 1 : acc), 0);
+							// run transaction to perform writes only (remove participant and set hasDivorced, update user)
+							await runTransaction(db, async (tx) => {
+								for (const r of preReads) {
+									const mRef = doc(db, 'marriages', r.id);
+									// always remove participant and set hasDivorced true
+									tx.update(mRef, { participants: arrayRemove(id), hasDivorced: true });
+								}
+								// award 700 per removed marriage (excluding already-divorced) and mark user as not married
+								tx.update(docRef, { money: increment(700 * awardCount), married: false });
+							});
+						} catch (err) {
+							console.error('Failed to process divorce', err);
+							openSnackbar('fail');
+						}
+						setChecked(false);
+						return;
+					}
+					if (typeof marriedId === 'number' || (!isNaN(Number(marriedId)) && String(marriedId).length > 0)) {
+						const idStr = String(marriedId);
+						const marriagesDocRef = doc(db, 'marriages', idStr);
+						// run transaction: initialize/update marriages doc and update user doc atomically
+						await runTransaction(db, async (tx) => {
+							const marriagesSnap = await tx.get(marriagesDocRef);
+							if (!marriagesSnap.exists()) {
+								// initialize with participants array and hasDivorced field
+								tx.set(marriagesDocRef, {
+									participants: [id],
+									hasDivorced: false,
+								});
+							} else {
+								// append participant
+								tx.update(marriagesDocRef, {
+									participants: arrayUnion(id),
+								});
+							}
+							// update user's doc in same transaction
+							tx.update(docRef, {
+								food: increment(data.food),
+								happiness: increment(data.happiness),
+								money: increment(data.money),
+								charity: increment(data.charity),
+								married: typeof data.married === 'number',
+							});
+						});
+					}
+				} catch (err) {
+					console.error('Failed to record marriage participation', err);
+					openSnackbar('fail');
+				}
+				// setChecked after transaction
 				setChecked(false);
 				return;
 			}
