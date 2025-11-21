@@ -22,6 +22,8 @@ export default function Scanner({ setChecked, snapshot, id }) {
 		invalid: { severity: 'error', message: 'Invalid QR code' },
 		missing_setup: { severity: 'error', message: 'Database is not set up properly' },
 		default: { severity: 'error', message: 'Invalid QR code' },
+		already_married: { severity: 'warning', message: 'You are already married and cannot marry again' },
+		not_married: { severity: 'warning', message: 'You are not married and cannot divorce' },
 	};
 
 	const openSnackbar = (reason) => {
@@ -69,6 +71,16 @@ export default function Scanner({ setChecked, snapshot, id }) {
 				throw e;
 			}
 		}
+
+		// marriage/divorce validation: cannot divorce when not married; cannot marry when already married
+		if (data.married !== undefined) {
+			if (String(data.married).toLowerCase() === 'divorce') {
+				if (!snapshot.married) return { result: 'fail', reason: 'not_married' };
+			} else {
+				// attempting to marry (married contains an id or numeric)
+				if (snapshot.married) return { result: 'fail', reason: 'already_married' };
+			}
+		}
 		return { result: 'ok' };
 	}
 
@@ -105,7 +117,10 @@ export default function Scanner({ setChecked, snapshot, id }) {
 									tx.update(mRef, { participants: arrayRemove(id), hasDivorced: true });
 								}
 								// award 700 per removed marriage (excluding already-divorced) and mark user as not married
-								tx.update(docRef, { money: increment(700 * awardCount), married: false });
+								tx.update(docRef, {
+									money: increment(700 * awardCount),
+									married: false
+								});
 							});
 						} catch (err) {
 							console.error('Failed to process divorce', err);
