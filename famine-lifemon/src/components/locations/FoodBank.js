@@ -28,7 +28,7 @@ const FoodBank = ({ setFormData }) => {
       money: role === CustomerID ? amount * price : role === DonorID || role === RecipientID ? 0 : undefined,
       charity:  role === CustomerID ? undefined :
                 role === DonorID ? amount * 5 :
-                role === RecipientID ? 2 :
+                role === RecipientID ? 0 :
                 undefined,
     });
   }
