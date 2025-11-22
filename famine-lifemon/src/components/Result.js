@@ -2,10 +2,29 @@ import React, { useEffect, useState } from 'react';
 import { Paper } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { db } from '../database/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 
 const charitySymbol = "🔥";
 const happySymbol = "😄";
+
+// marriageBonus: query the `marriages` collection for documents containing this user
+// and return 1000 if any active marriage (hasDivorced === false) exists, otherwise 0
+const marriageBonus = async (userId) => {
+  if (!userId) return 0;
+  try {
+    const q = query(collection(db, 'marriages'), where('participants', 'array-contains', userId));
+    const snap = await getDocs(q);
+    let stableMarriages = 0;
+    for (const d of snap.docs) {
+      const m = d.data();
+      if (!m.hasDivorced) stableMarriages++;
+    }
+    return stableMarriages * 1000;
+  } catch (e) {
+    console.error('marriageBonus error', e);
+    return 0;
+  }
+}
 
 const renderRows = (rows) => {
   return rows.map(row => {
@@ -34,15 +53,19 @@ const Result = () => {
           charity: 0,
         };
       });
-      usersSnapshot.docs.forEach(doc => {
-        const data = doc.data();
+      // iterate serially so we can await DB checks per user
+      for (const docSnap of usersSnapshot.docs) {
+        const data = docSnap.data();
+        const userId = docSnap.id;
         const group = data.group - 1;
         groups[group].numMembers++;
         groups[group].happiness += data.happiness;
-        groups[group].money += data.money;
-        groups[group].food += data.food + data.charityFood;
-        groups[group].charity += data.charity;
-      });
+        // compute marriage bonus by consulting marriages collection
+        const bonus = await marriageBonus(userId);
+        groups[group].money += (data.money || 0) + bonus;
+        groups[group].food += (data.food || 0) + (data.charityFood || 0);
+        groups[group].charity += (data.charity || 0);
+      }
       setRows(renderRows(groups));
     }
     calcGroupTotal();
