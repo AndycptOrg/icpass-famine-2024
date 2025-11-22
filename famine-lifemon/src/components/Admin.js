@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MenuItem, TextField } from '@mui/material';
+import { debug } from './secret/Secret';
 
 import Code from './Code';
 import Church from './locations/Church';
@@ -112,12 +113,14 @@ const Admin = () => {
         (location === GambaID) ? <YellowGambleDrug setFormData={setFormData} /> :
         <></>
       }
-      <div style={{ marginTop: 12 }}>
-        <strong>Current formData:</strong>
-        <pre style={{ background: '#f6f6f6', padding: 8, borderRadius: 4 }}>
-          {JSON.stringify(formData, null, 2)}
-        </pre>
-      </div>
+      {
+        (debug) ? <div style={{ marginTop: 12 }}>
+          <strong>Current formData:</strong>
+          <pre style={{ background: '#f6f6f6', padding: 8, borderRadius: 4 }}>
+            {JSON.stringify(formData, null, 2)}
+          </pre>
+        </div> : <></>
+      }
       <Code
         header="famine-2023-lifemon"
         food={formData.food}
