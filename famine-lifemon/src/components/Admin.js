@@ -14,6 +14,7 @@ import ICEntertainment from './locations/ICEntertainment';
 import JobCentre from './locations/JobCentre';
 import Lab from './locations/Lab';
 import PoliceStationPrison from './locations/PoliceStationPrison';
+import Treasury from './locations/Treasury';
 import School from './locations/School';
 import YellowGambleDrug from './locations/YellowGambleDrug';
 
@@ -31,6 +32,7 @@ const Admin = () => {
     'Lab',
     'Police Station & Prison',
     'School',
+    'Treasury',
     'Yellow Gamble Drug',
   ];
   const ChurchID = locations.indexOf('Church');
@@ -44,6 +46,7 @@ const Admin = () => {
   const EntertainmentID = locations.indexOf('IC Entertainment');
   const LabID = locations.indexOf('Lab');
   const PoliceStationPrisonID = locations.indexOf('Police Station & Prison');
+  const TreasuryID = locations.indexOf('Treasury');
   const SchoolID = locations.indexOf('School');
   const GambaID = locations.indexOf('Yellow Gamble Drug');
 
@@ -109,6 +112,7 @@ const Admin = () => {
         (location === JobCentreID) ? <JobCentre setFormData={setFormData} /> :
         (location === LabID) ? <Lab setFormData={setFormData} /> :
         (location === PoliceStationPrisonID) ? <PoliceStationPrison setFormData={setFormData} /> :
+        (location === TreasuryID) ? <Treasury setFormData={setFormData} /> :
         (location === SchoolID) ? <School setFormData={setFormData} /> :
         (location === GambaID) ? <YellowGambleDrug setFormData={setFormData} /> :
         <></>
@@ -131,6 +135,7 @@ const Admin = () => {
         charity={formData.charity}
         married={formData.married}
         timestamp={timestamp}
+        password={formData.password}
       />
     </>
   );
