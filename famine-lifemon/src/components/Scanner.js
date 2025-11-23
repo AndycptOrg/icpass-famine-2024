@@ -155,15 +155,16 @@ export default function Scanner({ setChecked, snapshot, id }) {
 		// when costing food, cost charityFood first
 		if (data.food !== undefined &&  // costing food
 			data.food < 0) { 		// costing food
-			const charityFoodAvailable = snapshot.charityFood || 0;
-			const charityFoodToDeduct = Math.min(charityFoodAvailable, -data.food);
+			const foodCost = -data.food; // 4
+			const charityFoodAvailable = snapshot.charityFood; // 6
+			const charityFoodCost = Math.min(charityFoodAvailable, foodCost); // 4
 			// when donating from food bank, track false charity
 			if (data.foodBank !== undefined) {
-				falseCharity += charityFoodToDeduct;
+				falseCharity += charityFoodCost;
 			}
-			const remainingFoodToDeduct = -data.food + charityFoodToDeduct;
-			userUpdatePayload.charityFood = increment(-charityFoodToDeduct);
-			userUpdatePayload.food = increment(-remainingFoodToDeduct);
+			const remainingFoodCost = foodCost - charityFoodCost; // 8
+			userUpdatePayload.charityFood = increment(-charityFoodCost); 
+			userUpdatePayload.food = increment(-remainingFoodCost);
 		}
 
 		// when updating charity
