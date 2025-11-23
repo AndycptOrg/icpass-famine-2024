@@ -8,9 +8,11 @@ const LocationRenderer = ({ controls = [] }) => {
     <>
       {controls.map(ctrl => (
         <TextField
+          type ={ctrl.type || 'text'}
           key={ctrl.id}
           id={ctrl.id}
           size={ctrl.size || 'large'}
+          inputProps={ctrl.inputProps || {}}
           value={ctrl.value}
           label={ctrl.label}
           onChange={ctrl.onChange}
