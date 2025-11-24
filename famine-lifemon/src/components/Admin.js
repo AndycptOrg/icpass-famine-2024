@@ -14,7 +14,7 @@ import ICEntertainment from './locations/ICEntertainment';
 import JobCentre from './locations/JobCentre';
 import Lab from './locations/Lab';
 import PoliceStationPrison from './locations/PoliceStationPrison';
-import Treasury from './locations/Treasury';
+import Government from './locations/Gov';
 import School from './locations/School';
 import YellowGambleDrug from './locations/YellowGambleDrug';
 
@@ -32,7 +32,7 @@ const Admin = () => {
     'Lab',
     'Police Station & Prison',
     'School',
-    'Treasury',
+    'Gov',
     'Yellow Gamble Drug',
   ];
   const ChurchID = locations.indexOf('Church');
@@ -46,7 +46,7 @@ const Admin = () => {
   const EntertainmentID = locations.indexOf('IC Entertainment');
   const LabID = locations.indexOf('Lab');
   const PoliceStationPrisonID = locations.indexOf('Police Station & Prison');
-  const TreasuryID = locations.indexOf('Treasury');
+  const GovernmentID = locations.indexOf('Gov');
   const SchoolID = locations.indexOf('School');
   const GambaID = locations.indexOf('Yellow Gamble Drug');
 
@@ -112,7 +112,7 @@ const Admin = () => {
         (location === JobCentreID) ? <JobCentre setFormData={setFormData} /> :
         (location === LabID) ? <Lab setFormData={setFormData} /> :
         (location === PoliceStationPrisonID) ? <PoliceStationPrison setFormData={setFormData} /> :
-        (location === TreasuryID) ? <Treasury setFormData={setFormData} /> :
+        (location === GovernmentID) ? <Government setFormData={setFormData} /> :
         (location === SchoolID) ? <School setFormData={setFormData} /> :
         (location === GambaID) ? <YellowGambleDrug setFormData={setFormData} /> :
         <></>

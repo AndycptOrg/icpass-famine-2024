@@ -2,13 +2,13 @@ import React, { useState } from 'react'
 
 import LocationRenderer from './LocationRenderer';
 
-const Treasury = ({ setFormData }) => {
+const Government = ({ setFormData }) => {
   const [type, setType] = useState(-1);
   const [password, setPassword] = useState('');
   const [result, setResult] = useState(-1);
 
   const roles = ['Stimulus'];
-  const Stimulus = roles.indexOf('Stimulus');
+  const StimulusID = roles.indexOf('Stimulus');
 
 
   const handleTypeChange = e => {
@@ -77,4 +77,4 @@ const Treasury = ({ setFormData }) => {
   return <LocationRenderer controls={controls} />
 }
 
-export default Treasury;
+export default Government;
