@@ -9,5 +9,4 @@ tasks to improve their stats to win the game.
 [Brigidw](https://github.com/Brigidw) - Contributed on the UI/UX of the app <br />
 [StevenChenWaiHo](https://github.com/StevenChenWaiHo) - Modified the app for Famine24 2022 (Added secret stats and more) <br />
 [henrytsyu](https://github.com/henrytsyu) - Improved UX for admins and anti-cheating functionality for Famine24 2023 <br />
-
 [AndycptOrg](https://github.com/AndycptOrg) - Refactored codebase (Introduced abstractions, added features, and introduced more secrets) <br />
