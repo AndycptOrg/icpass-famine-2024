@@ -19,8 +19,8 @@ const YellowGambleDrug = ({ setFormData }) => {
     setAmount(0);
     setResult(1);
     setFormData({
-      food: value === 2 ? -3 : -1,
-      happiness: value === 0 ? 2 : value === 1 ? -1 : 5,
+      food: value === ClubID ? -3 : -1,
+      happiness: value === CasinoID ? 2 : value === 1 ? -1 : 5,
       money: value ? 30 : 130,
       charity: 0,
     });
