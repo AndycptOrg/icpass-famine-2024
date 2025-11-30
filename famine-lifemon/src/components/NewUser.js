@@ -59,6 +59,7 @@ export default function NewUser(props) {
     setDoc(doc(db, "users", id), {
       name: name,
       group: group,
+      charityFood: 0,
       food: handleRandom(foods).food,
       happiness: 5,
       money: handleRandom(moneyList).money,

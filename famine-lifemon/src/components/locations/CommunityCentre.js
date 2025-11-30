@@ -1,37 +1,37 @@
 import React, { useState } from 'react'
 
-import { TextField, MenuItem } from '@mui/material';
+import LocationRenderer from './LocationRenderer';
 
 const CommunityCentre = ({ setFormData }) => {
-  const [type, setType] = useState(true);
+  const [type, setType] = useState(-1);
 
-  return (
-    <TextField
-      required
-      id="type-select"
-      size='large'
-      value={type}
-      label="Type"
-      onChange={e => {
-        const value = e.target.value;
-        setType(value);
-        setFormData({
-          food: -1,
-          happiness: 2,
-          money: value === 0 ? 100 : 0,
-          charity: value === 0 ? 5: 0,
-          married: false,
-        });
-      }}
-      sx={{width: '20em'}}
-      select
-      fullWidth
-      margin='dense'
-    >
-      <MenuItem key={0} value={0}>Recycling Operative</MenuItem>
-      <MenuItem key={1} value={1}>Curling</MenuItem>
-    </TextField>
-  )
+  const roles = ['Recycling Operative', 'Collecting food waste'];
+
+  const handleTypeChange = e => {
+    const value = Number(e.target.value);
+    setType(value);
+    setFormData({
+      food: 2,
+      happiness: 2,
+      money: 0,
+      charity: 5,
+    });
+  }
+
+  const controls = [
+    {
+      id: 'type-select',
+      label: 'Type',
+      value: type,
+      onChange: handleTypeChange,
+      select: true,
+      options: roles.map((r, i) => ({ value: i, label: r })),
+      sx: { width: '20em' },
+      required: true,
+    }
+  ];
+
+  return <LocationRenderer controls={controls} />
 }
 
 export default CommunityCentre;

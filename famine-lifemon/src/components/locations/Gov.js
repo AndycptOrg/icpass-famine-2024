@@ -1,47 +1,43 @@
 import React, { useState } from 'react'
 
 import LocationRenderer from './LocationRenderer';
-import { GraduateLevel } from './School';
 
-const Corporation = ({ setFormData }) => {
+const Government = ({ setFormData }) => {
   const [type, setType] = useState(-1);
+  const [password, setPassword] = useState('');
   const [result, setResult] = useState(-1);
 
-  const roles = ['Banker', 'Lawyer'];
-  const BankerID = roles.indexOf('Banker');
-  const LawyerID = roles.indexOf('Lawyer');
+  const roles = ['Stimulus'];
+  const StimulusID = roles.indexOf('Stimulus');
 
-  const results = ['Winner', 'Loser'];
-  const WinnerID = results.indexOf('Winner');
-  const LoserID = results.indexOf('Loser');
 
   const handleTypeChange = e => {
     const value = Number(e.target.value);
     setType(value);
     // set invalid value initally
-    setResult(-1);
+    setResult(0);
     setFormData({
-      food: -1,
-      happiness: -1,
-      money: value === BankerID ? 250 : (value === LawyerID ? 220 : 150),
-      education: {
-        requirement: GraduateLevel,
-      },
+      food: 0,
+      happiness: 0,
+      money: 0,
       charity: 0,
     });
+  }
+
+  const handlePasswordChange = e => {
+    const value = e.target.value;
+    setPassword(value);
   }
 
   const handleResultChange = e => {
     const value = Number(e.target.value);
     setResult(value);
     setFormData({
-      food: -1,
-      happiness: -1,
-      money: value === WinnerID ? 350 : 50,
-      education: {
-        requirement: GraduateLevel,
-      },
-  charity: 0,
+      money: value,
+      charity: 0,
+      food: 0,
+      happiness: 0,
+      password: password,
     });
   }
 
@@ -57,18 +53,28 @@ const Corporation = ({ setFormData }) => {
       required: true,
     },
     {
+      id: 'password-input',
+      label: 'Password',
+      value: password,
+      onChange: handlePasswordChange,
+      type: 'password',
+      sx: { width: '20em' },
+      required: true,
+    },
+    {
       id: 'result-select',
       label: 'Result',
       value: result,
       onChange: handleResultChange,
-      select: true,
-      options: results.map((r, i) => ({ value: i, label: r })),
+      select: false,
       sx: { width: '20em' },
       required: true,
+      type: 'number',
+      inputProps: { min: -5000, max: 5000 },
     }
   ];
 
   return <LocationRenderer controls={controls} />
 }
 
-export default Corporation;
+export default Government;

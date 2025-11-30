@@ -67,7 +67,7 @@ export default function Stats({ snapshot, loading, showCharity }) {
 					</Grid>
 					<Grid item xs={8}>
 						<Typography variant="body2">
-							{loading ? "Loading..." : foodSymbol.repeat(snapshot?.food)}
+							{loading ? "Loading..." : foodSymbol.repeat(snapshot?.food+snapshot?.charityFood)}
 						</Typography>
 					</Grid>
 					<Grid item xs={3}>

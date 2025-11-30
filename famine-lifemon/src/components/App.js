@@ -53,18 +53,12 @@ export default function App() {
 			<Routes>
 				<Route path="/" element={<Layout />}>
           {
-            (localStorage.getItem("id")) ?
-              <>
-                <Route index element={<Passport id={id} result={false} />} />
-                <Route path='result' element={<Passport id={id} result={true} />} />
-                <Route path='*' element={<Passport id={id} result={false} />} />
-              </> :
-              <>
-                <Route index element={<NewUser setId={setId} />} />
-                <Route path={helperPath} element={<Admin />} />
-                <Route path='result' element={<Result />} />
-                <Route path='*' element={<NewUser setId={setId} />} />
-              </>
+            <>
+              <Route index element={<NewUser setId={setId} />} />
+              <Route path={helperPath} element={<Admin />} />
+              <Route path='result' element={<Result />} />
+              <Route path='*' element={<NewUser setId={setId} />} />
+            </>
           }
 				</Route>
 			</Routes>

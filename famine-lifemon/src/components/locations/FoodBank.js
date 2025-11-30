@@ -1,105 +1,99 @@
 import React, { useState } from 'react'
 
-import { TextField, MenuItem } from '@mui/material';
+import LocationRenderer from './LocationRenderer';
 
 const FoodBank = ({ setFormData }) => {
-  const [type, setType] = useState(0);
-  const [amount, setAmount] = useState(1);
+  const [type, setType] = useState(-1);
+  const [amount, setAmount] = useState(-1);
   const [price, setPrice] = useState(-100);
 
-  return (
-    <>
-      <TextField
-        required
-        id="type-select"
-        size='large'
-        value={type}
-        label="Type"
-        onChange={e => {
-          const value = e.target.value;
-          setType(value);
-          setFormData({
-            food: value === 0 ? amount : value === 1 ? -amount : 1,
-            foodBank: value === 0 ? 0 : value === 1 ? amount : -1,
-            happiness: value === 0 ? amount : value === 1 ? amount * 5 : 3,
-            money: value === 0 ? amount * price : 0,
-            charity: value === 0 ? 0 : value === 1 ? amount * 5 : 2,
-            married: false,
-          });
-        }}
-        sx={{width: '20em'}}
-        select
-        fullWidth
-        margin='dense'
-      >
-        <MenuItem key={0} value={0}>Customer</MenuItem>
-        <MenuItem key={1} value={1}>Donor</MenuItem>
-        <MenuItem key={2} value={2}>Recipient</MenuItem>
-      </TextField>
-      {
-        (type !== 2) &&
-          <TextField
-            required
-            id="amount-select"
-            size='large'
-            value={amount}
-            label="Amount"
-            onChange={e => {
-              const value = e.target.value;
-              setAmount(value);
-              setFormData({
-                food: type === 0 ? value : -value,
-                foodBank: type === 1 ? value : 0,
-                happiness: type === 0 ? value : value * 5,
-                money: type === 0 ? value * price : 0,
-                charity: type === 1 ? 5 * value : 0,
-                married: false,
-              });
-            }}
-            sx={{width: '20em'}}
-            select
-            fullWidth
-            margin='dense'
-          >
-            {
-              (Array.from({length: 5}, (_, i) => i + 1)).map(i => 
-                <MenuItem key={i} value={i}>{i}</MenuItem>
-              )
-            }
-          </TextField>
-      }
-      {
-        (type === 0) &&
-          <TextField
-            required
-            id="price-select"
-            size='large'
-            value={price}
-            label="Price"
-            onChange={e => {
-              const value = e.target.value;
-              setPrice(value);
-              setFormData({
-                food: type === 0 ? amount : -amount,
-                foodBank: 0,
-                happiness: type === 0 ? amount : amount * 5,
-                money: type === 0 ? amount * value : 0,
-                charity: 0,
-                married: false,
-              });
-            }}
-            sx={{width: '20em'}}
-            select
-            fullWidth
-            margin='dense'
-          >
-            <MenuItem key={0} value={-100}> $100</MenuItem>
-            <MenuItem key={1} value={-125}> $125</MenuItem>
-            <MenuItem key={2} value={-150}> $150</MenuItem>
-          </TextField>
-      }
-    </>
-  )
+  const roles = ['Customer', 'Donor', 'Recipient'];
+  const CustomerID = roles.indexOf('Customer');
+  const DonorID = roles.indexOf('Donor');
+  const RecipientID = roles.indexOf('Recipient');
+
+  const handleRoleChange = e => {
+    const role = Number(e.target.value);
+    setType(role);
+    setFormData({
+      food: role === CustomerID ? amount :
+            role === DonorID ? -amount :
+            role === RecipientID ? 1 :
+            undefined,
+      foodBank: role === CustomerID ? undefined :
+                role === DonorID ? amount :
+                role === RecipientID ? -1 :
+                undefined,
+      happiness: role === CustomerID ? amount : role === DonorID ? amount * 5 : role === RecipientID ? 3 : undefined,
+      money: role === CustomerID ? amount * price : role === DonorID || role === RecipientID ? 0 : undefined,
+      charity:  role === CustomerID ? undefined :
+                role === DonorID ? amount * 5 :
+                role === RecipientID ? 0 :
+                undefined,
+    });
+  }
+
+  const handleAmountChange = e => {
+    const value = Number(e.target.value);
+    setAmount(value);
+    setFormData({
+      food: type === CustomerID ? value : -value,
+      foodBank: type === CustomerID ? 0 :
+                type === DonorID ? value :
+                type === RecipientID ? undefined :
+                undefined,
+      happiness: type === CustomerID ? value : value * 5,
+      money: type === CustomerID ? value * price : 0,
+      charity: type === DonorID ? 5 * value : 0,
+    });
+  }
+
+  // only affects customers
+  const handlePriceChange = e => {
+    const value = Number(e.target.value);
+    setPrice(value);
+    setFormData({
+      food: amount,
+      happiness: amount,
+      money: amount * value,
+      charity: 0,
+    });
+  }
+
+  const controls = [
+    {
+      id: 'type-select',
+      label: 'Role',
+      value: type,
+      onChange: handleRoleChange,
+      select: true,
+      options: roles.map((r, i) => ({ value: i, label: r })),
+      sx: { width: '20em' },
+      required: true,
+    },
+    (type === CustomerID || type === DonorID) ? {
+      id: 'amount-select',
+      label: 'Amount of Food',
+      value: amount,
+      onChange: handleAmountChange,
+      select: true,
+      options: (Array.from({ length: 5 }, (_, i) => i + 1)).map(i => ({ value: i, label: String(i) })),
+      sx: { width: '20em' },
+      required: true,
+    } : null,
+    type === CustomerID ? {
+      id: 'price-select',
+      label: 'Price',
+      value: price,
+      onChange: handlePriceChange,
+      select: true,
+      options: [ { value: -100, label: '$100' }, { value: -125, label: '$125' }, { value: -150, label: '$150' } ],
+      sx: { width: '20em' },
+      required: true,
+    } : null,
+  ].filter(Boolean);
+
+  return <LocationRenderer controls={controls} />
 }
 
 export default FoodBank;

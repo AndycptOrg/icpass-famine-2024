@@ -1,41 +1,102 @@
 import React, { useState } from 'react'
 
-import { TextField, MenuItem } from '@mui/material';
+import LocationRenderer from './LocationRenderer';
+import { SecondaryLevel, UniversityLevel } from './School';
 
 const PoliceStationPrison = ({ setFormData }) => {
-  const [type, setType] = useState(true);
-  const [amount, setAmount] = useState(0);
-  const [result, setResult] = useState(0);
+  const [type, setType] = useState(-1);
+  const [amount, setAmount] = useState(-1);
 
-  return (
-    <TextField
-        required
-        id="amount-select"
-        size='large'
-        value={amount}
-        label="Amount"
-        onChange={e => {
-          const value = e.target.value;
-          setAmount(value);
-          setFormData({
-            food: -1,
-            happiness: -1,
-            money: 150 + value * 100,
-            charity: 0,
-            married: false,
-          });
-        }}
-        sx={{width: '20em'}}
-        select
-        fullWidth
-        margin='dense'
-      >
-        {
-          ([...Array(6).keys()]).map(i => 
-            <MenuItem key={i} value={i}>{i}</MenuItem>
-          )
-        }
-      </TextField>
-    )
+  const roles = ['Police', 'Prisoner'];
+  const PoliceID = roles.indexOf('Police');
+  const PrisonerID = roles.indexOf('Prisoner');
+
+  const prisonerOutcomes = [
+    { name: 'Betray Win', amount: 100 },
+    { name: 'Betray Lose', amount: -200 },
+    { name: 'Loyal Win', amount: -50 },
+    { name: 'Loyal Lose', amount: -150 },
+  ];
+
+  const handleRoleChange = e => {
+    const value = Number(e.target.value);
+    setType(value);
+    setAmount(0);
+
+    if (value === PoliceID) {
+      setFormData({
+        food: -1,
+        happiness: -1,
+        money: 150, // default when 0 criminals caught
+        education: { requirement: UniversityLevel }, // requested education requirement
+        charity: 0,
+      });
+    } else if (value === PrisonerID) {
+      setFormData({
+        food: 0,
+        happiness: 0,
+        money: 0,
+        charity: 0,
+      });
+    }
   }
+
+  const handlePoliceAmount = e => {
+    const value = Number(e.target.value);
+    setAmount(value);
+    setFormData({
+      food: -1,
+      happiness: -1,
+      money: 150 + value * 100,
+      education: { requirement: UniversityLevel },
+      charity: 0,
+    });
+  }
+
+  const handlePrisonerAmount = e => {
+    const value = e.target.value;
+    setAmount(value);
+    setFormData({
+      food: 0,
+      happiness: 0,
+      money: value,
+      charity: 0,
+    });
+  }
+
+  const controls = [
+    {
+      id: 'type-select',
+      label: 'Role',
+      value: type,
+      onChange: handleRoleChange,
+      select: true,
+      options: roles.map((r, i) => ({ value: i, label: r })),
+      sx: { width: '20em' },
+      required: true,
+    },
+    type === PoliceID ? {
+      id: 'amount-select',
+      label: 'Caught Criminals',
+      value: amount,
+      onChange: handlePoliceAmount,
+      select: true,
+      options: ([...Array(6).keys()]).map(i => ({ value: i, label: String(i) })),
+      sx: { width: '20em' },
+      required: true,
+    } : 
+    type === PrisonerID ? {
+      id: 'amount-select',
+      label: 'outcome',
+      value: amount,
+      onChange: handlePrisonerAmount,
+      select: true,
+      options: prisonerOutcomes.map((o, i) => ({ value: o.amount, label: o.name })),
+      sx: { width: '20em' },
+      required: true,
+    } : null
+  ].filter(Boolean);
+
+  return <LocationRenderer controls={controls} />
+}
 export default PoliceStationPrison;
