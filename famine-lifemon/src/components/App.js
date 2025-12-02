@@ -54,10 +54,16 @@ export default function App() {
 				<Route path="/" element={<Layout />}>
           {
             <>
-              <Route index element={<NewUser setId={setId} />} />
               <Route path={helperPath} element={<Admin />} />
               <Route path='result' element={<Result />} />
-              <Route path='*' element={<NewUser setId={setId} />} />
+              (localStorage.getItem("id")) ?
+              <>
+                <Route index element={<Passport id={id} result={false} />} />
+              </> :
+              <>
+                <Route index element={<NewUser setId={setId} />} />
+                <Route path='*' element={<NewUser setId={setId} />} />
+              </>
             </>
           }
 				</Route>
