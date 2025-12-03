@@ -48,7 +48,7 @@ export default function Scanner({ setChecked, snapshot, id }) {
 			return { result: 'ignore' };
 		}
 		// affordability checks
-		if (snapshot.food + snapshot.charityFood + data.food < 0) return { result: 'fail', reason: 'hungry' };
+		if (snapshot.food + data.food < 0) return { result: 'fail', reason: 'hungry' };
 		if (snapshot.happiness + data.happiness < 0) return { result: 'fail', reason: 'sad' };
 		if (snapshot.money + data.money < 0) return { result: 'fail', reason: 'poor' };
 		// education requirement
@@ -148,23 +148,26 @@ export default function Scanner({ setChecked, snapshot, id }) {
 		// recieving donations where charityFood should increase
 		if (data.foodBank !== undefined && data.food !== undefined && data.food > 0) {
 			userUpdatePayload.charityFood = increment(data.food);
+			userUpdatePayload.food = increment(data.food);
 		}
 
 		let falseCharity = 0;
 
 		// when costing food, cost charityFood first
 		if (data.food !== undefined &&  // costing food
-			data.food < 0) { 		// costing food
-			const foodCost = -data.food; // 4
-			const charityFoodAvailable = snapshot.charityFood; // 6
-			const charityFoodCost = Math.min(charityFoodAvailable, foodCost); // 4
+			data.food < 0) { 			// costing food
+			// food to deduct
+			const foodCost = -data.food;
+			// how much charity food is available
+			const charityFoodAvailable = snapshot.charityFood;
+			// how much to deduct from charity food
+			const charityFoodCost = Math.min(charityFoodAvailable, foodCost);
 			// when donating from food bank, track false charity
 			if (data.foodBank !== undefined) {
 				falseCharity += charityFoodCost;
 			}
-			const remainingFoodCost = foodCost - charityFoodCost; // 8
 			userUpdatePayload.charityFood = increment(-charityFoodCost); 
-			userUpdatePayload.food = increment(-remainingFoodCost);
+			userUpdatePayload.food = increment(-foodCost);
 		}
 
 		// when updating charity
