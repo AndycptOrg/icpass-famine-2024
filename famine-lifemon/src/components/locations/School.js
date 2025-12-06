@@ -40,11 +40,12 @@ const School = ({ setFormData }) => {
   const handleTypeChange = e => {
     const value = Number(e.target.value);
     setType(value);
+    setResult(0);
     setFormData({
       food: - value - 1,
       happiness: -1,
       money: 0,
-      education: { requirement: value, pass: result },
+      education: { requirement: value, pass: 0 },
       charity: 0,
     });
   }
