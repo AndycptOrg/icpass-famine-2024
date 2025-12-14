@@ -27,11 +27,13 @@ export default function Title() {
 						</Typography>
 					</Grid>	
 					<Grid item xs={2} align="center">
+						<a href="https://icpass.wordpress.com/">
 						<img
 							className="logo"
 							src="/passlogo.png"
 							alt="ICPASS logo"
 							align="middle"/>
+						</a>
 					</Grid>
 					<Grid item className="title" xs={5} p={0} style={{justifyContent:"flex-start", alignItems:"center"}}>
 						<Typography
