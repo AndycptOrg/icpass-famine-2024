@@ -29,6 +29,7 @@ export default function Passport({ id, result }) {
 					<Result /> :
 					<QRBlock snapshot={snapshot} loading={loading} id={id} />
 			}
+			<a href={window.location.href+"?id="+id}>Recovery link</a>(save this link to recover your account)
 		</>
 	);
 }

@@ -55,7 +55,7 @@ export default function App() {
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
-      const idParam = " " + params.get('id');
+      const idParam = params.get('id');
       // Remove the id param from the URL regardless of whether we accept it.
       if (params.has('id')) {
         params.delete('id');
