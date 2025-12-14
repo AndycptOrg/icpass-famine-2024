@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import '@fontsource/roboto/400.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import { helperPath } from './secret/Secret';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../database/firebase';
 import Passport from './Passport';
 import Layout from './Layout';
 import NewUser from './NewUser';
@@ -48,6 +50,50 @@ function useLocalStorage(key, initialValue) {
 export default function App() {
 	const [id, setId] = useLocalStorage("id", null);
 
+  // If the app is opened at root and URL has an ?id=... param, check if that
+  // id exists in the users collection and, if so, set it in localStorage.
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const idParam = " " + params.get('id');
+      // Remove the id param from the URL regardless of whether we accept it.
+      if (params.has('id')) {
+        params.delete('id');
+        const newSearch = params.toString();
+        const newUrl = window.location.pathname + (newSearch ? `?${newSearch}` : '');
+        // Replace state so we don't cause a navigation.
+        window.history.replaceState(null, '', newUrl);
+      }
+      console.log('checking id param', idParam);
+      // Only act when there's an id param and no id already set
+      if (idParam && !id) {
+        console.log('found id param', idParam);
+        // Only perform this check on the root path (no path after host)
+        const path = window.location.pathname || '/';
+        if (path === '/' || path === '') {
+          console.log('at root path, checking id in firestore');
+          // Check Firestore for the user doc
+          (async () => {
+            try {
+              const ref = doc(db, 'users', idParam);
+              const snap = await getDoc(ref);
+              console.log('firestore check complete', snap.exists());
+              if (snap.exists()) {
+                setId(idParam);
+              } else {
+                console.log('id param does not exist in firestore');
+              }
+            } catch (e) {
+              console.log('error checking id param', e);
+            }
+          })();
+        }
+      }
+    } catch (e) {
+      console.log('error parsing search params', e);
+    }
+  }, [id, setId]);
+
 	return (
 		<BrowserRouter>
 			<Routes>
@@ -56,14 +102,18 @@ export default function App() {
             <>
               <Route path={helperPath} element={<Admin />} />
               <Route path='result' element={<Result />} />
-              (localStorage.getItem("id")) ?
-              <>
-                <Route index element={<Passport id={id} result={false} />} />
-              </> :
-              <>
-                <Route index element={<NewUser setId={setId} />} />
-                <Route path='*' element={<NewUser setId={setId} />} />
-              </>
+              {
+                id ? (
+                  <>
+                    <Route index element={<Passport id={id} result={false} />} />
+                  </>
+                ) : (
+                  <>
+                    <Route index element={<NewUser setId={setId} />} />
+                    <Route path='*' element={<NewUser setId={setId} />} />
+                  </>
+                )
+              }
             </>
           }
 				</Route>
