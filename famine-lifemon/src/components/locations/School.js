@@ -1,118 +1,171 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import { MenuItem } from '@mui/material';
 import LocationRenderer from './LocationRenderer';
+import { useCallback } from 'react';
 
 const PrimaryLevel = 0;
 const SecondaryLevel = 1;
 const UniversityLevel = 2;
 const GraduateLevel = 3;
 
-const School = ({ setFormData }) => {
-  const [type, setType] = useState(-1);
-  const [result, setResult] = useState(-1);
+function useGraduationOption(setFormData) {
+  const levels = ['Primary', 'Secondary', 'University'];
 
-  const roles = [
-    'Primary',
-    'Secondary',
-    'University',
-    'Teacher'
-  ];
-  const PrimaryID = roles.indexOf('Primary');
-  const SecondaryID = roles.indexOf('Secondary');
-  const UniversityID = roles.indexOf('University');
-  const TeacherID = roles.indexOf('Teacher');
-
-  // teacher 1-4 answers answered corresponding to food and happiness penalties and money gain
-
-  const levels = [
-    '中一/二',
-    '中三',
-    '中四',
-    '中五'
-  ];
-  const Level1ID = levels.indexOf('中一/二');
-  const Level2ID = levels.indexOf('中三');
-  const Level3ID = levels.indexOf('中四');
-  const Level4ID = levels.indexOf('中五');
-
-  // handlers convert input into the canonical form data
-  const handleTypeChange = e => {
-    const value = Number(e.target.value);
-    setType(value);
-    setResult(0);
-    setFormData({
-      food: - value - 1,
+  const [education, setEducation] = useState(0);
+  const [graduated, setGraduated] = useState(false);
+  // school option
+  const getGraduationForm = useCallback((level = education, passing = graduated) => {
+    return {
+      food: -level - 1,
       happiness: -1,
       money: 0,
-      education: { requirement: value, pass: 0 },
+      education: { requirement: level, pass: Number(passing) },
       charity: 0,
-    });
-  }
+    };
+  }, [education, graduated]);
 
-  const handleResultChange = e => {
-    const value = Number(e.target.value);
-    setResult(value);
-    setFormData({
-      food: - type - 1,
-      happiness: -1,
-      money: 0,
-      education: { requirement: type, pass: value },
-      charity: 0,
-    });
-  }
+  // keep parent form in sync whenever internal state changes
+  useEffect(() => {
+    setFormData(getGraduationForm());
+  }, [education, graduated, getGraduationForm, setFormData]);
 
-  const handleTeacherLevel = e => {
-    const value = Number(e.target.value);
-    setResult(value);
-    const levelPayouts = { 1: 50, 2: 100, 3: 150, 4: 200 };
-    const money = levelPayouts[value] ?? 0;
-    setFormData({
-      food: -1,
-      happiness: -1,
-      money,
-      education: { requirement: UniversityLevel },
-      charity: 0,
-    });
-  }
+  const handleEducationChange = e => {
+    const level = Number(e.target.value);
+    setEducation(level);
+  };
 
-  // descriptor for the renderer
+  const handleGraduatedChange = e => {
+    const passed = e.target.value === 'true' || e.target.value === true;
+    setGraduated(Boolean(passed));
+  };
+
   const controls = [
     {
-      id: 'type-select',
-      label: 'Type',
-      value: type,
-      onChange: handleTypeChange,
+      id: 'education-level-select',
+      label: 'Level',
+      value: education,
+      onChange: handleEducationChange,
       select: true,
-      options: roles.map((role, index) => ({ value: index, label: role })),
+      options: levels.map((level, index) => ({ value: index, label: level })),
       sx: { width: '20em' },
       required: true,
     },
-    // conditional control depending on role
-    (type !== TeacherID) ? {
+    {
       id: 'result-select',
       label: 'Result',
-      value: result,
-      onChange: handleResultChange,
+      value: graduated,
+      onChange: handleGraduatedChange,
       select: true,
-      options: [{ value: 1, label: 'Pass' }, { value: 0, label: 'Fail' }],
+      options: [{ value: true, label: 'Pass' }, { value: false, label: 'Fail' }],
       sx: { width: '20em' },
       required: true,
-    } : {
-      id: 'result-select',
-      label: 'Level reached',
-      value: result,
-      onChange: handleTeacherLevel,
-      select: true,
-      options: levels.map((level, index) => ({ value: index + 1, label: level })),
-      sx: { width: '20em' },
-      required: true,
-    }
-  ].filter(Boolean);
+    },
+  ];
 
-  return <LocationRenderer controls={controls} />
+  // allow top-level to set defaults programmatically
+  const setDefaults = ({ level = 0, pass = false } = {}) => {
+    setEducation(level);
+    setGraduated(Boolean(pass));
+    // setFormData will be triggered by the effect above
+  };
+
+  return { getForm: () => getGraduationForm(), controls, setDefaults };
 }
 
+function useTeachingOption(setFormData) {
+  const difficulty = ['中一/二', '中三', '中四', '中五'];
+  const [teachingLevel, setTeachingLevel] = useState(1);
+
+  const getTeachingForm = useCallback((level = teachingLevel) => {
+    const levelPayouts = { 1: 50, 2: 100, 3: 150, 4: 200 };
+    return {
+      food: -1,
+      happiness: -1,
+      money: levelPayouts[level] ?? 0,
+      education: { requirement: UniversityLevel },
+      charity: 0,
+    };
+  }, [teachingLevel]);
+
+  useEffect(() => {
+    setFormData(getTeachingForm());
+  }, [teachingLevel, getTeachingForm, setFormData]);
+
+  const handleTeacherLevel = e => {
+    const value = Number(e.target.value);
+    setTeachingLevel(value);
+  };
+
+  const controls = [
+    {
+      id: 'teacher-level-select',
+      label: 'Level reached',
+      value: teachingLevel,
+      onChange: handleTeacherLevel,
+      select: true,
+      options: difficulty.map((level, index) => ({ value: index + 1, label: level })),
+      sx: { width: '20em' },
+      required: true,
+    },
+  ];
+
+  const setDefaults = ({ level = 1 } = {}) => {
+    setTeachingLevel(level);
+  };
+
+  return { getForm: () => getTeachingForm(), controls, setDefaults };
+}
+
+/* ---------- Top-level component ---------- */
+const School = ({ setFormData }) => {
+  const roles = ['School', 'Teacher'];
+  const SchoolRoleID = roles.indexOf('School');
+  const TeacherID = roles.indexOf('Teacher');
+
+  const [type, setType] = useState(SchoolRoleID);
+
+  // instantiate sub-option hooks
+  const graduation = useGraduationOption(setFormData);
+  const teaching = useTeachingOption(setFormData);
+
+  // When top-level switches type, ensure the selected sub-option's current form is pushed
+  useEffect(() => {
+    if (type === SchoolRoleID) {
+      // optionally set defaults when switching; example defaults shown
+      // graduation.setDefaults({ level: PrimaryLevel, pass: false });
+      setFormData(graduation.getForm());
+    } else {
+      // teaching.setDefaults({ level: 1 });
+      setFormData(teaching.getForm());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type]); // intentionally only depend on type; sub-hooks manage their own state
+
+  const handleTypeChange = e => {
+    const value = Number(e.target.value);
+    setType(value);
+    // the effect above will call setFormData for the newly selected sub-option
+  };
+
+  const typeControl = {
+    id: 'type-select',
+    label: 'Type',
+    value: type,
+    onChange: handleTypeChange,
+    select: true,
+    options: roles.map((role, index) => ({ value: index, label: role })),
+    sx: { width: '20em' },
+    required: true,
+  };
+
+  // choose controls from the selected sub-option
+  const subControls = type === SchoolRoleID ? graduation.controls : teaching.controls;
+
+  const controls = [typeControl, ...subControls];
+
+  return <LocationRenderer controls={controls} />;
+};
 export default School;
 
 export { PrimaryLevel, SecondaryLevel, UniversityLevel, GraduateLevel };
