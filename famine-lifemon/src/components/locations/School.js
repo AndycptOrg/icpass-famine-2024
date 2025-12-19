@@ -9,6 +9,9 @@ const SecondaryLevel = 1;
 const UniversityLevel = 2;
 const GraduateLevel = 3;
 
+// TODO: unify with similar hooks in other locations
+// TODO: abstract common patterns(useXOption) into reusable hooks/components
+
 function useGraduationOption(setFormData) {
   const levels = ['Primary', 'Secondary', 'University'];
 
@@ -74,6 +77,7 @@ function useGraduationOption(setFormData) {
 }
 
 function useTeachingOption(setFormData) {
+  // TODO: align difficulty with level payouts
   const difficulty = ['中一/二', '中三', '中四', '中五'];
   const [teachingLevel, setTeachingLevel] = useState(1);
 
