@@ -5,7 +5,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import { helperPath } from './secret/Secret';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../database/firebase';
+import { db, signInIfNeeded } from '../database/firebase';
 import Passport from './Passport';
 import Layout from './Layout';
 import NewUser from './NewUser';
@@ -49,6 +49,11 @@ function useLocalStorage(key, initialValue) {
 
 export default function App() {
 	const [id, setId] = useLocalStorage("id", null);
+
+  // Ensure anonymous auth so security rules can be applied to client requests
+  useEffect(() => {
+    signInIfNeeded().catch(e => console.error('Failed to ensure auth', e));
+  }, []);
 
   // If the app is opened at root and URL has an ?id=... param, check if that
   // id exists in the users collection and, if so, set it in localStorage.
