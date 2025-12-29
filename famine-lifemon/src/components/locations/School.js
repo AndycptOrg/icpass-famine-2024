@@ -22,9 +22,7 @@ function useGraduationOption(setFormData) {
     return {
       food: -level - 1,
       happiness: -1,
-      money: 0,
       education: { requirement: level, pass: Number(passing) },
-      charity: 0,
     };
   }, [education, graduated]);
 
@@ -88,7 +86,6 @@ function useTeachingOption(setFormData) {
       happiness: -1,
       money: levelPayouts[level] ?? 0,
       education: { requirement: UniversityLevel },
-      charity: 0,
     };
   }, [teachingLevel]);
 

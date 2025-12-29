@@ -27,7 +27,6 @@ const Corporation = ({ setFormData }) => {
       education: {
         requirement: GraduateLevel,
       },
-      charity: 0,
     });
   }
 
@@ -41,7 +40,6 @@ const Corporation = ({ setFormData }) => {
       education: {
         requirement: GraduateLevel,
       },
-  charity: 0,
     });
   }
 

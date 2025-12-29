@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { QrReader } from "@blackbox-vision/react-qr-reader";
 import { Snackbar, Slide, Alert } from '@mui/material';
-import { doc, updateDoc, increment, getDoc, arrayUnion, runTransaction, collection, query, where, getDocs, arrayRemove } from 'firebase/firestore';
+import { doc, getDoc, arrayUnion, runTransaction, collection, query, where, getDocs, arrayRemove, increment } from 'firebase/firestore';
 import { verify } from 'jsonwebtoken';
 
 import { db } from '../database/firebase';
@@ -51,7 +51,8 @@ export default function Scanner({ setChecked, snapshot, id }) {
 
 	// centralised validation: returns { result: 'ok' } | { result: 'ignore' } | { result: 'fail', reason }
 	const validateScanData = async (data) => {
-		if (!validTimestamp(data.timestamp)) {
+		// defensive: timestamp must exist
+		if (data === undefined || data.timestamp === undefined || !validTimestamp(data.timestamp)) {
 			return { result: 'fail', reason: 'outdated' };
 		}
 		// non-matching header -> ignore silently (behaviour preserved)
@@ -59,22 +60,23 @@ export default function Scanner({ setChecked, snapshot, id }) {
 			return { result: 'ignore' };
 		}
 		// affordability checks
-		if (snapshot.food + data.food < 0) return { result: 'fail', reason: 'hungry' };
-		if (snapshot.happiness + data.happiness < 0) return { result: 'fail', reason: 'sad' };
-		if (snapshot.money + data.money < 0) return { result: 'fail', reason: 'poor' };
+		if (data.food !== undefined && snapshot.food + data.food < 0) return { result: 'fail', reason: 'hungry' };
+		if (data.happiness !== undefined && snapshot.happiness + data.happiness < 0) return { result: 'fail', reason: 'sad' };
+		if (data.money !== undefined && snapshot.money + data.money < 0) return { result: 'fail', reason: 'poor' };
 		// education requirement
-		if (!!data.education && 							// education requirement present
-			snapshot.education < data.education.requirement)// sufficent education level
+		if (data.education !== undefined && data.education !== null &&
+				snapshot.education < data.education.requirement) // sufficient education level
 			return { result: 'fail', reason: 'uneducated' };
 		// food bank availability (async)
-		if (!!data.foodBank) {
+		if (data.foodBank !== undefined && data.foodBank !== null) {
 			try {
 				const appleSnap = await getDoc(appleRef);
 				if (appleSnap.data().amount + data.foodBank < 0) {
 					return { result: 'fail', reason: 'bank' };
 				}
-				// apply apple stock change as part of validation step
-				await updateDoc(appleRef, { amount: increment(data.foodBank) });
+				// do not apply changes during validation; actual apple stock updates
+				// will be performed inside the transaction where all values are
+				// pre-calculated before updates are applied.
 			} catch (e) {
 				if (e instanceof TypeError && e.message.includes("Cannot read properties of undefined")) {
 					return { result: 'fail', reason: 'missing_setup' };
@@ -85,7 +87,8 @@ export default function Scanner({ setChecked, snapshot, id }) {
 
 		// marriage/divorce validation: cannot divorce when not married; cannot marry when already married
 		if (data.married !== undefined) {
-			if (String(data.married).toLowerCase() === 'divorce') {
+			const marriedStr = String(data.married).toLowerCase();
+			if (marriedStr === 'divorce') {
 				if (!snapshot.married) return { result: 'fail', reason: 'not_married' };
 			} else {
 				// attempting to marry (married contains an id or numeric)
@@ -98,9 +101,13 @@ export default function Scanner({ setChecked, snapshot, id }) {
 	// updateData receives the transaction and scanned data
 	const updateData = async (tx, data) => {
 		const userUpdatePayload = {};
-		// handle divorce flow
+		// collect marriage doc operations to perform after calculation
+		const marriageOps = [];
+		let appleNewAmount = null;
+		let falseCharity = 0;
+
+		// handle divorce flow: collect marriage docs to update, compute money delta
 		if (data.married !== undefined && String(data.married).toLowerCase() === 'divorce') {
-			// read ahead for marriages involving this user
 			let preReads = null;
 			try {
 				const q = query(collection(db, 'marriages'), where('participants', 'array-contains', id));
@@ -113,15 +120,13 @@ export default function Scanner({ setChecked, snapshot, id }) {
 
 			// count how many valid divorces to award
 			const awardCount = preReads.reduce((acc, r) => (!r.data.hasDivorced ? acc + 1 : acc), 0);
-
-			// update all marriage docs to remove this user
+			// prepare marriage doc updates (do not execute yet)
 			for (const r of preReads) {
 				const mRef = doc(db, 'marriages', r.id);
-				tx.update(mRef, { participants: arrayRemove(id), hasDivorced: true });
+				marriageOps.push({ ref: mRef, update: { participants: arrayRemove(id), hasDivorced: true } });
 			}
-
-			// award and mark user as not married
-			userUpdatePayload.money = increment(700 * awardCount);
+			// compute money outcome for user
+			data.money = (snapshot.money === undefined ? 0 : snapshot.money) + 700 * awardCount;
 			userUpdatePayload.married = false;
 		}
 
@@ -131,63 +136,79 @@ export default function Scanner({ setChecked, snapshot, id }) {
 			const marriagesDocRef = doc(db, 'marriages', idStr);
 			const marriagesSnap = await tx.get(marriagesDocRef);
 			if (!marriagesSnap.exists()) {
-				tx.set(marriagesDocRef, {
-					participants: [id],
-					hasDivorced: false,
-				});
+				marriageOps.push({ ref: marriagesDocRef, set: { participants: [id], hasDivorced: false } });
 			} else {
-				tx.update(marriagesDocRef, {
-					participants: arrayUnion(id),
-				});
+				marriageOps.push({ update: { participants: arrayUnion(id) } });
 			}
-			// update user's doc in same transaction
-			userUpdatePayload.happiness = increment(data.happiness);
-			userUpdatePayload.money = increment(data.money);
 			userUpdatePayload.married = typeof data.married === 'number';
 		}
-		// Fallback: apply a user update payload (donations, education or default stats)
-		else {
-			userUpdatePayload.happiness = increment(data.happiness);
+
+		// compute numeric changes based on current user state (pre-calculate all deltas)
+		if (data.money !== undefined && userUpdatePayload.money === undefined) {
 			userUpdatePayload.money = increment(data.money);
 		}
 
-		// only increment education if passing condition met
-		if (data.education !== undefined && data.education.pass !== undefined && snapshot.education === data.education.requirement) {
+		if (data.happiness !== undefined) {
+			userUpdatePayload.happiness = increment(data.happiness);
+		}
+
+		// handle education pass
+		if (data.education !== undefined && data.education !== null && data.education.pass !== undefined) {
 			userUpdatePayload.education = increment(data.education.pass);
 		}
 
-		// recieving donations where charityFood should increase
+		// handle receiving food bank donations: charityFood and food increase
 		if (data.foodBank !== undefined && data.food !== undefined && data.food > 0) {
 			userUpdatePayload.charityFood = increment(data.food);
 			userUpdatePayload.food = increment(data.food);
 		}
 
-		let falseCharity = 0;
-
 		// when costing food, cost charityFood first
-		if (data.food !== undefined &&  // costing food
-			data.food < 0) { 			// costing food
-			// food to deduct
+		if (data.food !== undefined && data.food < 0) {
 			const foodCost = -data.food;
-			// how much charity food is available
 			const charityFoodAvailable = snapshot.charityFood;
-			// how much to deduct from charity food
 			const charityFoodCost = Math.min(charityFoodAvailable, foodCost);
-			// when donating from food bank, track false charity
 			if (data.foodBank !== undefined) {
 				falseCharity += charityFoodCost;
 			}
-			userUpdatePayload.charityFood = increment(-charityFoodCost); 
-			userUpdatePayload.food = increment(-foodCost);
+			// apply computed reductions
+			userUpdatePayload.charityFood = increment(- charityFoodCost);
+			userUpdatePayload.food = increment(- foodCost);
 		}
 
 		// when updating charity
 		if (data.charity !== undefined) {
-			userUpdatePayload.charity = increment(data.charity - 5*falseCharity);
+			userUpdatePayload.charity = increment(data.charity - 5 * falseCharity);
 		}
+
 		// declare lastAccess in the update so security rules can validate rate limit
 		userUpdatePayload.lastAccess = new Date();
-		tx.update(docRef, userUpdatePayload);
+
+		// handle apple stock update inside transaction if applicable
+		if (data.foodBank !== undefined && data.foodBank !== null) {
+			const appleSnap = await tx.get(appleRef);
+			const currAmount = (appleSnap.exists() && appleSnap.data() && appleSnap.data().amount) ? appleSnap.data().amount : 0;
+			appleNewAmount = currAmount + data.foodBank;
+		}
+
+		// apply marriage document operations
+		for (const op of marriageOps) {
+			if (op.set) {
+				tx.set(op.ref, op.set);
+			} else if (op.update) {
+				tx.update(op.ref, op.update);
+			}
+		}
+
+		// apply apple update if needed
+		if (appleNewAmount !== null) {
+			tx.update(appleRef, { amount: appleNewAmount });
+		}
+
+		// only perform update if payload has keys
+		if (Object.keys(userUpdatePayload).length > 0) {
+			tx.update(docRef, userUpdatePayload);
+		}
 		return { result: 'ok' };
 	}
 

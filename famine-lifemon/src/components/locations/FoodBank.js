@@ -56,7 +56,6 @@ const FoodBank = ({ setFormData }) => {
       food: amount,
       happiness: amount,
       money: amount * value,
-      charity: 0,
     });
   }
 
