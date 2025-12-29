@@ -11,6 +11,16 @@ export default function Scanner({ setChecked, snapshot, id }) {
 	// centralized snackbar state: { open, reason }
 	const [snackbar, setSnackbar] = useState({ open: false, reason: null });
 
+	// local rate-limit helpers: store last declared access in localStorage
+	const localKey = `lastAccess_${id}`;
+	const getLocalLastAccess = () => {
+		try { return Number(window.localStorage.getItem(localKey)) || 0; } catch(e) { return 0; }
+	}
+	const setLocalLastAccess = (ms) => {
+		try { window.localStorage.setItem(localKey, String(ms)); } catch(e) {}
+	}
+	const canSendUpdate = () => Date.now() - getLocalLastAccess() >= 60 * 1000;
+
 	const snackbarMap = {
 		uneducated: { severity: 'warning', message: 'You are not educated enough to do this' },
 		poor: { severity: 'warning', message: 'You cannot afford this' },
@@ -21,6 +31,7 @@ export default function Scanner({ setChecked, snapshot, id }) {
 		outdated: { severity: 'error', message: 'QR code has expired' },
 		invalid: { severity: 'error', message: 'Invalid QR code' },
 		missing_setup: { severity: 'error', message: 'Database is not set up properly' },
+		rate_limited: { severity: 'warning', message: 'Please wait at least 60 seconds between updates' },
 		default: { severity: 'error', message: 'Invalid QR code' },
 		already_married: { severity: 'warning', message: 'You are already married and cannot marry again' },
 		not_married: { severity: 'warning', message: 'You are not married and cannot divorce' },
@@ -174,6 +185,8 @@ export default function Scanner({ setChecked, snapshot, id }) {
 		if (data.charity !== undefined) {
 			userUpdatePayload.charity = increment(data.charity - 5*falseCharity);
 		}
+		// declare lastAccess in the update so security rules can validate rate limit
+		userUpdatePayload.lastAccess = new Date();
 		tx.update(docRef, userUpdatePayload);
 		return { result: 'ok' };
 	}
@@ -184,7 +197,13 @@ export default function Scanner({ setChecked, snapshot, id }) {
 			// verify secret
 			const data = verify(result.text, secret);
 
-			// enure update can be applied to user
+			// client-side rate-limit: avoid attempting update if user recently updated
+			if (!canSendUpdate()) {
+				openSnackbar('rate_limited');
+				return;
+			}
+
+			// ensure update can be applied to user
 			let check = await validateScanData(data);
 			if (check.result === 'ignore') return;
 			if (check.result === 'fail') {
@@ -194,8 +213,13 @@ export default function Scanner({ setChecked, snapshot, id }) {
 
 			// calculates true updates to user
 			check = await runTransaction(db, async (tx) => {
-				return updateData(tx, data);
-			});
+				return updateData(tx, data)
+				.catch(e => { return { result: 'fail', reason: e.toString() }; }); // ineffective line
+			}).catch(e => { return { result: 'fail', reason: e.toString() }; }); // ineffective line
+			// on success, record local declared time so client avoids spamming
+			if (check && check.result === 'ok') {
+				setLocalLastAccess(Date.now());
+			}
 			if (check && check.result === 'fail') {
 				openSnackbar(check.reason);
 			}
