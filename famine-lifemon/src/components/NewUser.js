@@ -56,17 +56,7 @@ export default function NewUser(props) {
     }
   
 
-    (async () => {
-      // make sure we're signed in and have a UID to attach as owner
-      try {
-        await signInIfNeeded();
-      } catch (e) {
-        console.error('Cannot create user without auth', e);
-        return;
-      }
-      const ownerUid = auth.currentUser ? auth.currentUser.uid : null;
-
-      await setDoc(doc(db, "users", id), {
+    setDoc(doc(db, "users", id), {
       name: name,
       group: group,
       charityFood: 0,
@@ -76,11 +66,8 @@ export default function NewUser(props) {
       education: handleRandom(educations).education,
       charity: 0,
       married: false,
-      // owner is the auth uid that created this document; used by rules
-      owner: ownerUid,
     });
     props.setId(id);
-    })();
   }
 
   const [group, setGroup] = useState('');
