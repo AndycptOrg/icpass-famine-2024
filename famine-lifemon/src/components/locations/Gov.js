@@ -16,12 +16,7 @@ const Government = ({ setFormData }) => {
     setType(value);
     // set invalid value initally
     setResult(0);
-    setFormData({
-      food: 0,
-      happiness: 0,
-      money: 0,
-      charity: 0,
-    });
+    setFormData({});
   }
 
   const handlePasswordChange = e => {
@@ -34,9 +29,6 @@ const Government = ({ setFormData }) => {
     setResult(value);
     setFormData({
       money: value,
-      charity: 0,
-      food: 0,
-      happiness: 0,
       password: password,
     });
   }

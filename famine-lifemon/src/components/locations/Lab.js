@@ -16,7 +16,6 @@ const Lab = ({ setFormData }) => {
       food: -1,
       happiness: -1,
       money: value ? 30 : 130,
-      charity: 0,
     });
   }
 
@@ -27,7 +26,6 @@ const Lab = ({ setFormData }) => {
       food: -1,
       happiness: -1,
       money: value * 30,
-      charity: 0,
     });
   }
 
@@ -38,7 +36,6 @@ const Lab = ({ setFormData }) => {
       food: -1,
       happiness: -1,
       money: value ? 300 : 120,
-      charity: 0,
     });
   }
 

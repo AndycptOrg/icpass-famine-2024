@@ -20,7 +20,6 @@ const JobCentre = ({ setFormData }) => {
             happiness: -1,
             education: { requirement: PrimaryLevel },
             money: value === FoodDeliveryID ? 70 : 0,
-            charity: 0,
         });
     }
 
@@ -29,10 +28,8 @@ const JobCentre = ({ setFormData }) => {
         setAmount(value);
         setFormData({
             food: -1,
-            happiness: 0,
             education: { requirement: PrimaryLevel },
             money: value,
-            charity: 0,
         });
     }
 

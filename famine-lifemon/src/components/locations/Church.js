@@ -44,17 +44,13 @@ const Church = ({ setFormData }) => {
         food: -2,
         happiness: 2,
         money: -500,
-        charity: 0,
         // embed the allocated id (number) so the QR contains it
         married: allocated,
       });
     } else {
       // mark divorce explicitly so scanner can perform divorce-specific handling
       setFormData({
-        food: 0,
         happiness: -2,
-        money: 0,
-        charity: 0,
         married: 'divorce',
       });
     }

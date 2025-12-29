@@ -13,7 +13,6 @@ const CommunityCentre = ({ setFormData }) => {
     setFormData({
       food: 2,
       happiness: 2,
-      money: 0,
       charity: 5,
     });
   }

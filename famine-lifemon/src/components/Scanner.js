@@ -40,7 +40,8 @@ export default function Scanner({ setChecked, snapshot, id }) {
 
 	// centralised validation: returns { result: 'ok' } | { result: 'ignore' } | { result: 'fail', reason }
 	const validateScanData = async (data) => {
-		if (!validTimestamp(data.timestamp)) {
+		// defensive: timestamp must exist
+		if (data === undefined || data.timestamp === undefined || !validTimestamp(data.timestamp)) {
 			return { result: 'fail', reason: 'outdated' };
 		}
 		// non-matching header -> ignore silently (behaviour preserved)
@@ -48,15 +49,15 @@ export default function Scanner({ setChecked, snapshot, id }) {
 			return { result: 'ignore' };
 		}
 		// affordability checks
-		if (snapshot.food + data.food < 0) return { result: 'fail', reason: 'hungry' };
-		if (snapshot.happiness + data.happiness < 0) return { result: 'fail', reason: 'sad' };
-		if (snapshot.money + data.money < 0) return { result: 'fail', reason: 'poor' };
+		if (data.food !== undefined && snapshot.food + data.food < 0) return { result: 'fail', reason: 'hungry' };
+		if (data.happiness !== undefined && snapshot.happiness + data.happiness < 0) return { result: 'fail', reason: 'sad' };
+		if (data.money !== undefined && snapshot.money + data.money < 0) return { result: 'fail', reason: 'poor' };
 		// education requirement
-		if (!!data.education && 							// education requirement present
-			snapshot.education < data.education.requirement)// sufficent education level
+		if (data.education !== undefined && data.education !== null &&
+				snapshot.education < data.education.requirement) // sufficient education level
 			return { result: 'fail', reason: 'uneducated' };
 		// food bank availability (async)
-		if (!!data.foodBank) {
+		if (data.foodBank !== undefined && data.foodBank !== null) {
 			try {
 				const appleSnap = await getDoc(appleRef);
 				if (appleSnap.data().amount + data.foodBank < 0) {
@@ -74,7 +75,8 @@ export default function Scanner({ setChecked, snapshot, id }) {
 
 		// marriage/divorce validation: cannot divorce when not married; cannot marry when already married
 		if (data.married !== undefined) {
-			if (String(data.married).toLowerCase() === 'divorce') {
+			const marriedStr = String(data.married).toLowerCase();
+			if (marriedStr === 'divorce') {
 				if (!snapshot.married) return { result: 'fail', reason: 'not_married' };
 			} else {
 				// attempting to marry (married contains an id or numeric)
@@ -129,19 +131,19 @@ export default function Scanner({ setChecked, snapshot, id }) {
 					participants: arrayUnion(id),
 				});
 			}
-			// update user's doc in same transaction
-			userUpdatePayload.happiness = increment(data.happiness);
-			userUpdatePayload.money = increment(data.money);
+			// update user's doc in same transaction (only when fields defined)
+			if (data.happiness !== undefined) userUpdatePayload.happiness = increment(data.happiness);
+			if (data.money !== undefined) userUpdatePayload.money = increment(data.money);
 			userUpdatePayload.married = typeof data.married === 'number';
 		}
 		// Fallback: apply a user update payload (donations, education or default stats)
 		else {
-			userUpdatePayload.happiness = increment(data.happiness);
-			userUpdatePayload.money = increment(data.money);
+			if (data.happiness !== undefined) userUpdatePayload.happiness = increment(data.happiness);
+			if (data.money !== undefined) userUpdatePayload.money = increment(data.money);
 		}
 
 		// only increment education if passing condition met
-		if (data.education !== undefined && data.education.pass !== undefined && snapshot.education === data.education.requirement) {
+		if (data.education !== undefined && data.education !== null && data.education.pass !== undefined && snapshot.education === data.education.requirement) {
 			userUpdatePayload.education = increment(data.education.pass);
 		}
 
@@ -174,7 +176,10 @@ export default function Scanner({ setChecked, snapshot, id }) {
 		if (data.charity !== undefined) {
 			userUpdatePayload.charity = increment(data.charity - 5*falseCharity);
 		}
-		tx.update(docRef, userUpdatePayload);
+		// only perform update if payload has keys
+		if (Object.keys(userUpdatePayload).length > 0) {
+			tx.update(docRef, userUpdatePayload);
+		}
 		return { result: 'ok' };
 	}
 
@@ -184,7 +189,7 @@ export default function Scanner({ setChecked, snapshot, id }) {
 			// verify secret
 			const data = verify(result.text, secret);
 
-			// enure update can be applied to user
+			// ensure update can be applied to user
 			let check = await validateScanData(data);
 			if (check.result === 'ignore') return;
 			if (check.result === 'fail') {

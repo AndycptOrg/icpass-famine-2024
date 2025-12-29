@@ -29,15 +29,9 @@ const PoliceStationPrison = ({ setFormData }) => {
         happiness: -1,
         money: 150, // default when 0 criminals caught
         education: { requirement: UniversityLevel }, // requested education requirement
-        charity: 0,
       });
     } else if (value === PrisonerID) {
-      setFormData({
-        food: 0,
-        happiness: 0,
-        money: 0,
-        charity: 0,
-      });
+      setFormData({});
     }
   }
 
@@ -49,19 +43,13 @@ const PoliceStationPrison = ({ setFormData }) => {
       happiness: -1,
       money: 150 + value * 100,
       education: { requirement: UniversityLevel },
-      charity: 0,
     });
   }
 
   const handlePrisonerAmount = e => {
     const value = e.target.value;
     setAmount(value);
-    setFormData({
-      food: 0,
-      happiness: 0,
-      money: value,
-      charity: 0,
-    });
+    setFormData({});
   }
 
   const controls = [
